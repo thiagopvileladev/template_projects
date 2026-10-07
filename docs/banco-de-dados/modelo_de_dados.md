@@ -39,8 +39,6 @@ erDiagram
         int album_id FK
         string titulo
         int duracao_ms
-        int bpm
-        string genero
         string isrc UK
     }
 
