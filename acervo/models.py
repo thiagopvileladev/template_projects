@@ -15,6 +15,7 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
+from django.urls import reverse
 
 NOTA_VALIDATORS = [MinValueValidator(0.0), MaxValueValidator(10.0)]
 
@@ -44,6 +45,9 @@ class Album(models.Model):
 
     def __str__(self):
         return f'{self.titulo} — {self.artista}'
+
+    def get_absolute_url(self):
+        return reverse('acervo:album_detalhe', args=[self.pk])
 
     def clean(self):
         if self.ano_lancamento and self.ano_lancamento > ano_maximo():
@@ -110,6 +114,9 @@ class Faixa(models.Model):
 
     def __str__(self):
         return f'{self.titulo} ({self.album.artista})'
+
+    def get_absolute_url(self):
+        return reverse('acervo:faixa_detalhe', args=[self.pk])
 
     @property
     def artista(self):
@@ -178,3 +185,6 @@ class Colecao(models.Model):
 
     def __str__(self):
         return self.nome
+
+    def get_absolute_url(self):
+        return reverse('acervo:colecao_detalhe', args=[self.pk])

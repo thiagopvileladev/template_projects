@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Álbuns · TrackVault{% endblock %}
+
+{% block content %}
+<div class="tv-topo">
+    <h1>Álbuns</h1>
+    {% if user.is_authenticated %}<a href="{% url 'acervo:album_novo' %}" class="tv-btn tv-btn-auto">+ Novo álbum</a>{% endif %}
+</div>
+
+{% if album_list %}
+<div class="tv-grid">
+    {% for album in album_list %}
+    <a href="{% url 'acervo:album_detalhe' album.pk %}" class="tv-card tv-album">
+        {% if album.capa_url %}
+            <img src="{{ album.capa_url }}" alt="Capa de {{ album.titulo }}" loading="lazy">
+        {% else %}
+            <div class="tv-capa-vazia" aria-hidden="true">♪</div>
+        {% endif %}
+        <strong>{{ album.titulo }}</strong>
+        <span class="tv-muted">{{ album.artista }}{% if album.ano_lancamento %} · {{ album.ano_lancamento }}{% endif %}</span>
+        <small class="tv-muted">{{ album.total_faixas }} faixa{{ album.total_faixas|pluralize }}</small>
+    </a>
+    {% endfor %}
+</div>
+{% include 'partials/paginacao.html' %}
+{% else %}
+<p class="tv-muted">Nenhum álbum cadastrado ainda.</p>
+{% endif %}
+{% endblock %}

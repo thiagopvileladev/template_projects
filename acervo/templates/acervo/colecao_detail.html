@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ colecao.nome }} · TrackVault{% endblock %}
+
+{% block content %}
+<section class="tv-card">
+    <h1>{{ colecao.nome }}</h1>
+    <p class="tv-muted">por {{ colecao.usuario.username }} · {% if colecao.is_publica %}pública{% else %}privada{% endif %}</p>
+    {% if colecao.descricao %}<p>{{ colecao.descricao }}</p>{% endif %}
+    {% if colecao.usuario == user %}
+    <div class="tv-actions">
+        <a href="{% url 'acervo:colecao_editar' colecao.pk %}" class="tv-btn tv-btn-secondary tv-btn-auto">Editar</a>
+        <a href="{% url 'acervo:colecao_excluir' colecao.pk %}" class="tv-btn tv-btn-danger tv-btn-auto">Excluir</a>
+    </div>
+    {% endif %}
+</section>
+
+<h2>Faixas</h2>
+<ul class="tv-lista">
+{% for faixa in colecao.faixas.all %}
+    <li><a href="{% url 'acervo:faixa_detalhe' faixa.pk %}">{{ faixa.titulo }}</a> <span class="tv-muted">— {{ faixa.album.artista }}</span></li>
+{% empty %}
+    <li class="tv-muted">Esta coleção ainda está vazia.</li>
+{% endfor %}
+</ul>
+{% endblock %}

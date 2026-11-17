@@ -90,6 +90,42 @@ main {
 .tv-muted { color: var(--tv-muted); }
 .tv-error { color: var(--tv-red); }
 
+.tv-medium { max-width: 640px; margin: 0 auto; }
+.tv-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.tv-btn { display: inline-block; text-align: center; text-decoration: none; }
+.tv-btn-auto { width: auto; padding-left: 1.2rem; padding-right: 1.2rem; }
+.tv-btn-secondary { background: transparent; color: var(--tv-text); border: 1px solid var(--tv-muted); }
+.tv-btn-danger { background: var(--tv-red); color: #fff; }
+.tv-actions .tv-btn { flex: 1 1 auto; }
+.tv-header nav { flex-wrap: wrap; }
+
+/* Listagens */
+.tv-topo { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.tv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+.tv-album { display: flex; flex-direction: column; gap: .25rem; color: var(--tv-text); text-decoration: none; padding: 1rem; }
+.tv-album:hover { outline: 1px solid var(--tv-green); }
+.tv-album img, .tv-capa-vazia { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; }
+.tv-capa-vazia { display: grid; place-items: center; background: var(--tv-bg); font-size: 3rem; color: var(--tv-muted); }
+
+.tv-tabela { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+.tv-tabela th, .tv-tabela td { padding: .6rem; text-align: left; border-bottom: 1px solid #2a2a2a; white-space: nowrap; }
+.tv-tabela th { color: var(--tv-muted); font-weight: 600; }
+
+.tv-paginacao { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
+
+/* Detalhes */
+.tv-detalhe { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.tv-capa { width: 200px; max-width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; }
+.tv-dados { display: grid; grid-template-columns: auto 1fr; gap: .25rem 1rem; }
+.tv-dados dt { color: var(--tv-muted); }
+.tv-dados dd { margin: 0; }
+.tv-avaliacao { margin-bottom: 1rem; }
+.tv-avaliacao header { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.tv-nota { background: var(--tv-green); color: #000; font-weight: 700; padding: .1rem .5rem; border-radius: 4px; }
+.tv-nota-pitchfork { background: var(--tv-red); color: #fff; }
+.tv-lista { padding-left: 1.2rem; }
+.tv-field ul.tv-checkbox, .tv-field div > div { color: var(--tv-text); }
+
 /* Mensagens */
 .tv-alert {
     padding: .75rem 1rem;

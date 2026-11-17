@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Faixas · TrackVault{% endblock %}
+
+{% block content %}
+<div class="tv-topo">
+    <h1>Faixas</h1>
+    {% if user.is_authenticated %}<a href="{% url 'acervo:faixa_nova' %}" class="tv-btn tv-btn-auto">+ Nova faixa</a>{% endif %}
+</div>
+
+{% block filtros %}{% endblock %}
+
+{% if faixa_list %}
+<table class="tv-tabela">
+    <thead><tr><th>Título</th><th>Artista</th><th>Álbum</th><th>Gênero</th><th>BPM</th><th>Média</th></tr></thead>
+    <tbody>
+    {% for faixa in faixa_list %}
+        <tr>
+            <td><a href="{% url 'acervo:faixa_detalhe' faixa.pk %}">{{ faixa.titulo }}</a></td>
+            <td>{{ faixa.album.artista }}</td>
+            <td><a href="{% url 'acervo:album_detalhe' faixa.album_id %}">{{ faixa.album.titulo }}</a></td>
+            <td>{{ faixa.get_genero_display }}</td>
+            <td>{{ faixa.bpm|default:'—' }}</td>
+            <td>{{ faixa.media|floatformat:1|default:'—' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% include 'partials/paginacao.html' %}
+{% else %}
+<p class="tv-muted">{% block vazio %}Nenhuma faixa cadastrada ainda.{% endblock %}</p>
+{% endif %}
+{% endblock %}

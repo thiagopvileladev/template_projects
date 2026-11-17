@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ faixa.titulo }} · TrackVault{% endblock %}
+
+{% block content %}
+<section class="tv-card tv-detalhe">
+    {% if faixa.album.capa_url %}<img src="{{ faixa.album.capa_url }}" alt="Capa de {{ faixa.album.titulo }}" class="tv-capa">{% endif %}
+    <div>
+        <h1>{{ faixa.titulo }}</h1>
+        <p class="tv-muted">
+            {{ faixa.album.artista }} ·
+            <a href="{% url 'acervo:album_detalhe' faixa.album_id %}">{{ faixa.album.titulo }}</a>
+        </p>
+        <dl class="tv-dados">
+            <dt>Gênero</dt><dd>{{ faixa.get_genero_display }}</dd>
+            <dt>BPM</dt><dd>{{ faixa.bpm|default:'—' }}</dd>
+            <dt>ISRC</dt><dd>{{ faixa.isrc|default:'—' }}</dd>
+            <dt>Popularidade</dt><dd>{{ faixa.popularidade|default:'—' }}</dd>
+            <dt>Média dos curadores</dt><dd>{{ media|floatformat:1|default:'—' }}</dd>
+        </dl>
+        {% if user.is_authenticated %}
+        <div class="tv-actions">
+            <a href="{% url 'acervo:faixa_avaliar' faixa.pk %}" class="tv-btn tv-btn-auto">{% if minha_avaliacao %}Editar minha avaliação{% else %}Avaliar{% endif %}</a>
+            <a href="{% url 'acervo:faixa_editar' faixa.pk %}" class="tv-btn tv-btn-secondary tv-btn-auto">Editar</a>
+            <a href="{% url 'acervo:faixa_excluir' faixa.pk %}" class="tv-btn tv-btn-danger tv-btn-auto">Excluir</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<h2>Avaliações</h2>
+{% for avaliacao in avaliacoes %}
+<article class="tv-card tv-avaliacao">
+    <header>
+        <strong>{{ avaliacao.usuario.username }}</strong>
+        <span class="tv-nota">{{ avaliacao.nota_pessoal|floatformat:1 }}</span>
+        {% if avaliacao.nota_pitchfork is not None %}
+            <span class="tv-nota tv-nota-pitchfork" title="Nota Pitchfork">P {{ avaliacao.nota_pitchfork|floatformat:1 }}</span>
+        {% endif %}
+        <small class="tv-muted">{{ avaliacao.criado_em|date:'d/m/Y' }}</small>
+    </header>
+    {% if avaliacao.resenha %}<p>{{ avaliacao.resenha|linebreaksbr }}</p>{% endif %}
+    {% if avaliacao.usuario == user %}
+    <form method="post" action="{% url 'acervo:avaliacao_excluir' avaliacao.pk %}" class="tv-inline">
+        {% csrf_token %}
+        <button type="submit" class="tv-link tv-error" onclick="return confirm('Excluir sua avaliação?')">Excluir minha avaliação</button>
+    </form>
+    {% endif %}
+</article>
+{% empty %}
+<p class="tv-muted">Nenhuma avaliação ainda.</p>
+{% endfor %}
+{% endblock %}

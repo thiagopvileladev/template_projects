@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ album.titulo }} · TrackVault{% endblock %}
+
+{% block content %}
+<section class="tv-card tv-detalhe">
+    {% if album.capa_url %}<img src="{{ album.capa_url }}" alt="Capa de {{ album.titulo }}" class="tv-capa">{% endif %}
+    <div>
+        <h1>{{ album.titulo }}</h1>
+        <p class="tv-muted">{{ album.artista }}{% if album.ano_lancamento %} · {{ album.ano_lancamento }}{% endif %}</p>
+        {% if user.is_authenticated %}
+        <div class="tv-actions">
+            <a href="{% url 'acervo:faixa_nova' %}?album={{ album.pk }}" class="tv-btn tv-btn-auto">+ Adicionar faixa</a>
+            <a href="{% url 'acervo:album_editar' album.pk %}" class="tv-btn tv-btn-secondary tv-btn-auto">Editar</a>
+            <a href="{% url 'acervo:album_excluir' album.pk %}" class="tv-btn tv-btn-danger tv-btn-auto">Excluir</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<h2>Faixas</h2>
+{% if faixas %}
+<table class="tv-tabela">
+    <thead><tr><th>Título</th><th>Gênero</th><th>BPM</th><th>Média</th></tr></thead>
+    <tbody>
+    {% for faixa in faixas %}
+        <tr>
+            <td><a href="{% url 'acervo:faixa_detalhe' faixa.pk %}">{{ faixa.titulo }}</a></td>
+            <td>{{ faixa.get_genero_display }}</td>
+            <td>{{ faixa.bpm|default:'—' }}</td>
+            <td>{{ faixa.media|floatformat:1|default:'—' }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="tv-muted">Este álbum ainda não tem faixas.</p>
+{% endif %}
+{% endblock %}

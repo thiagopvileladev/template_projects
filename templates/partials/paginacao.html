@@ -1,0 +1,11 @@
+{% if is_paginated %}
+<nav class="tv-paginacao" aria-label="Paginação">
+    {% if page_obj.has_previous %}
+        <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}">&larr; Anterior</a>
+    {% endif %}
+    <span class="tv-muted">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}">Próxima &rarr;</a>
+    {% endif %}
+</nav>
+{% endif %}

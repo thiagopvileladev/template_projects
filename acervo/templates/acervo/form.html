@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo_pagina }} · TrackVault{% endblock %}
+
+{% block content %}
+<section class="tv-card tv-medium">
+    <h1>{{ titulo_pagina }}</h1>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% include 'partials/form.html' %}
+        <div class="tv-actions">
+            <button type="submit" class="tv-btn">Salvar</button>
+            <a href="{% if cancelar_url %}{{ cancelar_url }}{% elif object %}{{ object.get_absolute_url }}{% else %}/{% endif %}" class="tv-btn tv-btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

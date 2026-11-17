@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Coleções · TrackVault{% endblock %}
+
+{% block content %}
+<div class="tv-topo">
+    <h1>Coleções</h1>
+    {% if user.is_authenticated %}<a href="{% url 'acervo:colecao_nova' %}" class="tv-btn tv-btn-auto">+ Nova coleção</a>{% endif %}
+</div>
+
+{% if colecao_list %}
+<div class="tv-grid">
+    {% for colecao in colecao_list %}
+    <a href="{% url 'acervo:colecao_detalhe' colecao.pk %}" class="tv-card tv-album">
+        <strong>{{ colecao.nome }}</strong>
+        <span class="tv-muted">por {{ colecao.usuario.username }}{% if not colecao.is_publica %} · privada{% endif %}</span>
+        <small class="tv-muted">{{ colecao.total_faixas }} faixa{{ colecao.total_faixas|pluralize }}</small>
+    </a>
+    {% endfor %}
+</div>
+{% include 'partials/paginacao.html' %}
+{% else %}
+<p class="tv-muted">Nenhuma coleção para mostrar.</p>
+{% endif %}
+{% endblock %}

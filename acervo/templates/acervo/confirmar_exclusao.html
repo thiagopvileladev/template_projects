@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir · TrackVault{% endblock %}
+
+{% block content %}
+<section class="tv-card tv-medium">
+    <h1>Excluir "{{ object }}"?</h1>
+    {% if aviso %}<p class="tv-error">{{ aviso }}</p>{% endif %}
+    <p>Esta ação não pode ser desfeita.</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="tv-actions">
+            <button type="submit" class="tv-btn tv-btn-danger">Sim, excluir</button>
+            <a href="{{ object.get_absolute_url }}" class="tv-btn tv-btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

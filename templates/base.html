@@ -10,6 +10,9 @@
     <header class="tv-header">
         <a href="{% url 'core:home' %}" class="tv-logo">TrackVault</a>
         <nav>
+            <a href="{% url 'acervo:faixa_lista' %}">Faixas</a>
+            <a href="{% url 'acervo:album_lista' %}">Álbuns</a>
+            <a href="{% url 'acervo:colecao_lista' %}">Coleções</a>
             {% if user.is_authenticated %}
                 <span class="tv-muted">{{ user.username }}</span>
                 <form method="post" action="{% url 'accounts:logout' %}" class="tv-inline">
