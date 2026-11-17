@@ -8,15 +8,94 @@
     --tv-muted: #A7A7A7;
 }
 
+* { box-sizing: border-box; }
+
 body {
     margin: 0;
-    padding: 2rem 1rem;
     background: var(--tv-bg);
     color: var(--tv-text);
     font-family: 'Inter', 'Roboto', system-ui, sans-serif;
 }
 
+a { color: var(--tv-green); }
+
 h1 {
-    color: var(--tv-green);
     font-family: 'Montserrat', sans-serif;
+    margin-top: 0;
 }
+
+main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* Cabeçalho */
+.tv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--tv-surface);
+}
+.tv-header nav { display: flex; align-items: center; gap: 1rem; }
+.tv-logo {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-decoration: none;
+}
+.tv-inline { display: inline; margin: 0; }
+.tv-link {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--tv-green);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Cartões e formulários */
+.tv-card {
+    background: var(--tv-surface);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+.tv-narrow { max-width: 420px; margin: 0 auto; }
+
+.tv-field { display: flex; flex-direction: column; gap: .25rem; margin-bottom: 1rem; }
+.tv-field input, .tv-field select, .tv-field textarea {
+    padding: .6rem;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background: var(--tv-bg);
+    color: var(--tv-text);
+    font: inherit;
+}
+.tv-field ul { margin: .25rem 0 0; padding-left: 1.2rem; color: var(--tv-muted); font-size: .85rem; }
+
+.tv-btn {
+    width: 100%;
+    padding: .7rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--tv-green);
+    color: #000;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.tv-muted { color: var(--tv-muted); }
+.tv-error { color: var(--tv-red); }
+
+/* Mensagens */
+.tv-alert {
+    padding: .75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    background: var(--tv-surface);
+    border-left: 4px solid var(--tv-green);
+}
+.tv-alert-error { border-left-color: var(--tv-red); }

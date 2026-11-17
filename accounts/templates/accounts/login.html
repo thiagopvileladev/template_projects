@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Entrar · TrackVault{% endblock %}
+
+{% block content %}
+<section class="tv-card tv-narrow">
+    <h1>Entrar</h1>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% include 'partials/form.html' %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <button type="submit" class="tv-btn">Entrar</button>
+    </form>
+    <p class="tv-muted">Ainda não tem conta? <a href="{% url 'accounts:cadastro' %}">Crie a sua</a>.</p>
+</section>
+{% endblock %}

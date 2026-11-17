@@ -7,6 +7,7 @@ eles vêm do arquivo .env (que NÃO é versionado); em produção (Render), são
 cadastrados no painel da hospedagem. Veja .env.example.
 """
 
+import sys
 from pathlib import Path
 
 import dj_database_url
@@ -44,6 +45,10 @@ INSTALLED_APPS = [
 
 # Usuário customizado com login por e-mail (UC01).
 AUTH_USER_MODEL = 'accounts.Usuario'
+
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'core:home'
+LOGOUT_REDIRECT_URL = 'core:home'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -118,6 +123,12 @@ STORAGES = {
     'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
     'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
 }
+
+# Nos testes não há collectstatic, então o manifesto não existe.
+if 'test' in sys.argv:
+    STORAGES['staticfiles'] = {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'
+    }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

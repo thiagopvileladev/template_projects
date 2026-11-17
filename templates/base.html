@@ -7,7 +7,27 @@
     <link rel="stylesheet" href="{% static 'css/trackvault.css' %}">
 </head>
 <body>
+    <header class="tv-header">
+        <a href="{% url 'core:home' %}" class="tv-logo">TrackVault</a>
+        <nav>
+            {% if user.is_authenticated %}
+                <span class="tv-muted">{{ user.username }}</span>
+                <form method="post" action="{% url 'accounts:logout' %}" class="tv-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="tv-link">Sair</button>
+                </form>
+            {% else %}
+                <a href="{% url 'accounts:login' %}">Entrar</a>
+                <a href="{% url 'accounts:cadastro' %}">Criar conta</a>
+            {% endif %}
+        </nav>
+    </header>
+
     <main>
+        {% for message in messages %}
+            <div class="tv-alert tv-alert-{{ message.tags }}" role="alert">{{ message }}</div>
+        {% endfor %}
+
         {% block content %}{% endblock %}
     </main>
 </body>

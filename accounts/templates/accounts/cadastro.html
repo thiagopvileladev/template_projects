@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Criar conta · TrackVault{% endblock %}
+
+{% block content %}
+<section class="tv-card tv-narrow">
+    <h1>Criar conta</h1>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% include 'partials/form.html' %}
+        <button type="submit" class="tv-btn">Criar conta</button>
+    </form>
+    <p class="tv-muted">Já tem conta? <a href="{% url 'accounts:login' %}">Entrar</a>.</p>
+</section>
+{% endblock %}
