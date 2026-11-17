@@ -10,7 +10,7 @@
 **Curso:** Análise e Desenvolvimento de Sistemas  
 **Disciplina:** Desenvolvimento Web  
 **Turma / Semestre:** Turma A | 4° semestre  
-**Professor(a):** Felippe Pires Ferreira  
+**Professor(a):** Felippe Pires
 **Status do projeto:** Entrega da Fase 1 — Documentação e Arquitetura
 
 ---
