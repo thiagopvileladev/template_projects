@@ -38,7 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Apps do projeto
     'core',
+    'accounts',
+    'acervo',
 ]
+
+# Usuário customizado com login por e-mail (UC01).
+AUTH_USER_MODEL = 'accounts.Usuario'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
