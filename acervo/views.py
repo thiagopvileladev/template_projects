@@ -24,6 +24,7 @@ from django.views.generic import (
     UpdateView,
 )
 
+from .busca import BuscaFaixaForm, filtrar_faixas
 from .forms import AlbumForm, AvaliacaoForm, ColecaoForm, FaixaForm
 from .models import Album, Avaliacao, Colecao, Faixa
 
@@ -82,13 +83,27 @@ class AlbumDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
 # --- Faixas -------------------------------------------------------------------
 
 class FaixaListView(ListView):
+    """Lista de faixas com busca por múltiplos critérios (UC04)."""
+
     model = Faixa
     paginate_by = ITENS_POR_PAGINA
 
     def get_queryset(self):
-        return Faixa.objects.select_related('album').annotate(
-            media=Avg('avaliacoes__nota_pessoal')
-        )
+        self.form = BuscaFaixaForm(self.request.GET or None, usuario=self.request.user)
+        if self.form.is_bound and not self.form.is_valid():
+            # Filtro inválido (ex.: nota 50): mostra o erro e nenhum resultado.
+            return Faixa.objects.none()
+        filtros = self.form.cleaned_data if self.form.is_bound else {}
+        return filtrar_faixas(filtros)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = self.form
+        # Mantém os filtros ao trocar de página.
+        params = self.request.GET.copy()
+        params.pop('page', None)
+        context['query_string'] = params.urlencode()
+        return context
 
 
 class FaixaDetailView(DetailView):

@@ -126,6 +126,22 @@ main {
 .tv-lista { padding-left: 1.2rem; }
 .tv-field ul.tv-checkbox, .tv-field div > div { color: var(--tv-text); }
 
+/* Busca */
+.tv-header { flex-wrap: wrap; }
+.tv-busca-rapida { flex: 1 1 220px; max-width: 420px; }
+.tv-busca-rapida input {
+    width: 100%;
+    padding: .5rem 1rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--tv-bg);
+    color: var(--tv-text);
+    font: inherit;
+}
+.tv-filtros { margin-bottom: 1.5rem; }
+.tv-filtros-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0 1rem; }
+.tv-filtro-largo { grid-column: 1 / -1; }
+
 /* Mensagens */
 .tv-alert {
     padding: .75rem 1rem;

@@ -143,6 +143,71 @@ class AvaliacaoTests(BaseAcervoTest):
         self.assertEqual(resposta.status_code, 405)
 
 
+class BuscaTests(BaseAcervoTest):
+    """UC04 — Buscar Músicas no Acervo."""
+
+    def setUp(self):
+        super().setUp()
+        outro_album = Album.objects.create(titulo='Random Access Memories', artista='Daft Punk')
+        self.get_lucky = Faixa.objects.create(album=outro_album, titulo='Get Lucky', genero='eletronica', bpm=116)
+        self.rock = Faixa.objects.create(album=outro_album, titulo='Rock Song', genero='rock', bpm=150)
+        Avaliacao.objects.create(usuario=self.curador, faixa=self.faixa, nota_pessoal=9)
+        Avaliacao.objects.create(usuario=self.curador, faixa=self.get_lucky, nota_pessoal=6)
+
+    def buscar(self, **params):
+        resposta = self.client.get(reverse('acervo:faixa_lista'), params)
+        self.assertEqual(resposta.status_code, 200)
+        return resposta, list(resposta.context['faixa_list'])
+
+    def test_busca_livre_por_titulo_artista_ou_album(self):
+        self.assertEqual(self.buscar(q='lucky')[1], [self.get_lucky])
+        self.assertEqual(self.buscar(q='calvin')[1], [self.faixa])
+        self.assertEqual(set(self.buscar(q='random access')[1]), {self.get_lucky, self.rock})
+
+    def test_filtros_combinados(self):
+        _, faixas = self.buscar(artista='daft', genero='eletronica')
+        self.assertEqual(faixas, [self.get_lucky])
+
+    def test_filtro_nota_minima(self):
+        self.assertEqual(self.buscar(nota_min=8)[1], [self.faixa])
+
+    def test_filtro_faixa_de_bpm(self):
+        self.assertEqual(set(self.buscar(bpm_min=110, bpm_max=130)[1]), {self.faixa, self.get_lucky})
+
+    def test_filtro_por_colecao(self):
+        colecao = Colecao.objects.create(usuario=self.curador, nome='Rock', is_publica=True)
+        colecao.faixas.add(self.rock)
+        self.assertEqual(self.buscar(colecao=colecao.pk)[1], [self.rock])
+
+    def test_nao_filtra_por_colecao_privada_de_outro(self):
+        privada = Colecao.objects.create(usuario=self.outro, nome='Secreta')
+        resposta, faixas = self.buscar(colecao=privada.pk)
+        self.assertIn('colecao', resposta.context['form'].errors)
+        self.assertEqual(faixas, [])
+
+    def test_ordenar_por_nota(self):
+        _, faixas = self.buscar(ordem='nota')
+        self.assertEqual(faixas[:2], [self.faixa, self.get_lucky])
+
+    def test_sem_resultados_mostra_mensagem(self):
+        resposta, faixas = self.buscar(q='nao existe')
+        self.assertEqual(faixas, [])
+        self.assertContains(resposta, 'Nenhuma faixa corresponde aos filtros informados.')
+
+    def test_filtro_invalido_e_validado_no_servidor(self):
+        resposta, faixas = self.buscar(nota_min=50)
+        self.assertIn('nota_min', resposta.context['form'].errors)
+        self.assertEqual(faixas, [])
+
+    def test_bpm_min_maior_que_max(self):
+        resposta, _ = self.buscar(bpm_min=200, bpm_max=100)
+        self.assertContains(resposta, 'O BPM mínimo não pode ser maior que o máximo.')
+
+    def test_paginacao_mantem_filtros(self):
+        resposta, _ = self.buscar(genero='rock', page=1)
+        self.assertEqual(resposta.context['query_string'], 'genero=rock')
+
+
 class ColecaoTests(BaseAcervoTest):
     def test_criar_colecao_com_faixas(self):
         self.entrar()

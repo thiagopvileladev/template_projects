@@ -9,6 +9,9 @@
 <body>
     <header class="tv-header">
         <a href="{% url 'core:home' %}" class="tv-logo">TrackVault</a>
+        <form method="get" action="{% url 'acervo:faixa_lista' %}" class="tv-busca-rapida" role="search">
+            <input type="search" name="q" placeholder="Buscar faixa, artista ou álbum" aria-label="Buscar" maxlength="100">
+        </form>
         <nav>
             <a href="{% url 'acervo:faixa_lista' %}">Faixas</a>
             <a href="{% url 'acervo:album_lista' %}">Álbuns</a>

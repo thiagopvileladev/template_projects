@@ -8,9 +8,27 @@
     {% if user.is_authenticated %}<a href="{% url 'acervo:faixa_nova' %}" class="tv-btn tv-btn-auto">+ Nova faixa</a>{% endif %}
 </div>
 
-{% block filtros %}{% endblock %}
+<form method="get" class="tv-card tv-filtros" role="search">
+    {% if form.non_field_errors %}
+        <div class="tv-alert tv-alert-error" role="alert">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+    {% endif %}
+    <div class="tv-filtros-grid">
+        {% for field in form %}
+        <div class="tv-field{% if field.name == 'q' %} tv-filtro-largo{% endif %}">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<small class="tv-error">{{ error }}</small>{% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="tv-actions">
+        <button type="submit" class="tv-btn tv-btn-auto">Buscar</button>
+        {% if request.GET %}<a href="{% url 'acervo:faixa_lista' %}" class="tv-btn tv-btn-secondary tv-btn-auto">Limpar filtros</a>{% endif %}
+    </div>
+</form>
 
 {% if faixa_list %}
+<p class="tv-muted">{{ paginator.count }} faixa{{ paginator.count|pluralize }} encontrada{{ paginator.count|pluralize }}.</p>
 <table class="tv-tabela">
     <thead><tr><th>Título</th><th>Artista</th><th>Álbum</th><th>Gênero</th><th>BPM</th><th>Média</th></tr></thead>
     <tbody>
@@ -27,7 +45,9 @@
     </tbody>
 </table>
 {% include 'partials/paginacao.html' %}
+{% elif form.tem_filtro or form.errors %}
+<p class="tv-muted">Nenhuma faixa corresponde aos filtros informados.</p>
 {% else %}
-<p class="tv-muted">{% block vazio %}Nenhuma faixa cadastrada ainda.{% endblock %}</p>
+<p class="tv-muted">Nenhuma faixa cadastrada ainda.</p>
 {% endif %}
 {% endblock %}
