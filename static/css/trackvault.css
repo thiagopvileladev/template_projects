@@ -1,0 +1,22 @@
+/* Identidade visual TrackVault — docs/prototipos/identidade_e_prototipos.md */
+:root {
+    --tv-bg: #121212;
+    --tv-surface: #1E1E1E;
+    --tv-green: #1DB954;
+    --tv-red: #E50914;
+    --tv-text: #FFFFFF;
+    --tv-muted: #A7A7A7;
+}
+
+body {
+    margin: 0;
+    padding: 2rem 1rem;
+    background: var(--tv-bg);
+    color: var(--tv-text);
+    font-family: 'Inter', 'Roboto', system-ui, sans-serif;
+}
+
+h1 {
+    color: var(--tv-green);
+    font-family: 'Montserrat', sans-serif;
+}

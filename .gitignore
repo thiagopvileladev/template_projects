@@ -1,0 +1,35 @@
+# Segredos e configuração local — NUNCA versionar
+.env
+.env.*
+!.env.example
+
+# Ambiente virtual
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Banco de dados local
+db.sqlite3
+db.sqlite3-journal
+
+# Arquivos estáticos coletados (gerados pelo collectstatic)
+staticfiles/
+
+# Testes e cobertura
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Editores e sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Material da disciplina (não faz parte do projeto)
+Especificacao_Trabalho_Django.pdf
