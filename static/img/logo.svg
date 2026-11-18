@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TrackVault">
+  <title>TrackVault</title>
+  <!-- Cofre (vault) -->
+  <rect x="3" y="3" width="58" height="58" rx="12" fill="#1E1E1E" stroke="#1DB954" stroke-width="4"/>
+  <!-- Disco de vinil -->
+  <circle cx="32" cy="32" r="18" fill="#121212" stroke="#1DB954" stroke-width="3"/>
+  <circle cx="32" cy="32" r="11" fill="none" stroke="#1DB954" stroke-width="1.5" opacity=".5"/>
+  <circle cx="32" cy="32" r="5" fill="#1DB954"/>
+  <circle cx="32" cy="32" r="1.6" fill="#121212"/>
+  <!-- Maçaneta do cofre / destaque crítico -->
+  <circle cx="51" cy="13" r="3.5" fill="#E50914"/>
+</svg>

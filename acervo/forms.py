@@ -48,7 +48,7 @@ class ColecaoForm(forms.ModelForm):
     class Meta:
         model = Colecao
         fields = ('nome', 'descricao', 'is_publica', 'faixas')
-        widgets = {'faixas': forms.CheckboxSelectMultiple}
+        widgets = {'faixas': forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'})}
 
     def __init__(self, *args, usuario, **kwargs):
         # O usuário vem da view: necessário para validar nome único por usuário.

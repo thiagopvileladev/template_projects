@@ -1,36 +1,80 @@
 {% load static %}<!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" data-bs-theme="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="TrackVault — Curadoria, Acervo e Análises Críticas Musicais em um só Lugar.">
+    <meta name="theme-color" content="#121212">
     <title>{% block title %}TrackVault{% endblock %}</title>
+    <link rel="icon" href="{% static 'img/logo.svg' %}" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800&display=swap">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/trackvault.css' %}">
 </head>
-<body>
-    <header class="tv-header">
-        <a href="{% url 'core:home' %}" class="tv-logo">TrackVault</a>
-        <form method="get" action="{% url 'acervo:faixa_lista' %}" class="tv-busca-rapida" role="search">
-            <input type="search" name="q" placeholder="Buscar faixa, artista ou álbum" aria-label="Buscar" maxlength="100">
-        </form>
-        <nav>
-            <a href="{% url 'acervo:faixa_lista' %}">Faixas</a>
-            <a href="{% url 'acervo:album_lista' %}">Álbuns</a>
-            <a href="{% url 'acervo:colecao_lista' %}">Coleções</a>
-            {% if user.is_authenticated %}
-                <a href="{% url 'acervo:relatorio' %}">Relatórios</a>
-                <span class="tv-muted">{{ user.username }}</span>
-                <form method="post" action="{% url 'accounts:logout' %}" class="tv-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="tv-link">Sair</button>
-                </form>
-            {% else %}
-                <a href="{% url 'accounts:login' %}">Entrar</a>
-                <a href="{% url 'accounts:cadastro' %}">Criar conta</a>
-            {% endif %}
-        </nav>
-    </header>
+<body class="d-flex flex-column min-vh-100">
+    <a href="#conteudo" class="visually-hidden-focusable tv-pular">Pular para o conteúdo</a>
 
-    <main>
+    <nav class="navbar navbar-expand-lg tv-navbar sticky-top">
+        <div class="container-xl">
+            <a class="navbar-brand tv-logo" href="{% url 'core:home' %}">
+                <img src="{% static 'img/logo.svg' %}" alt="" width="34" height="34">
+                <span>Track<span class="tv-logo-destaque">Vault</span></span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu"
+                    aria-controls="menu" aria-expanded="false" aria-label="Abrir menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="menu">
+                <form method="get" action="{% url 'acervo:faixa_lista' %}" class="tv-busca-rapida mx-lg-4 my-3 my-lg-0" role="search">
+                    <input type="search" name="q" class="form-control" placeholder="Buscar faixa, artista ou álbum"
+                           aria-label="Buscar no acervo" maxlength="100">
+                </form>
+
+                {% with url=request.resolver_match.url_name %}
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link{% if url == 'faixa_lista' %} active{% endif %}" href="{% url 'acervo:faixa_lista' %}">Faixas</a></li>
+                    <li class="nav-item"><a class="nav-link{% if url == 'album_lista' %} active{% endif %}" href="{% url 'acervo:album_lista' %}">Álbuns</a></li>
+                    <li class="nav-item"><a class="nav-link{% if url == 'colecao_lista' %} active{% endif %}" href="{% url 'acervo:colecao_lista' %}">Coleções</a></li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link{% if url == 'relatorio' %} active{% endif %}" href="{% url 'acervo:relatorio' %}">Relatórios</a></li>
+                    {% endif %}
+                </ul>
+                {% endwith %}
+
+                <ul class="navbar-nav align-items-lg-center gap-lg-2">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="tv-avatar" aria-hidden="true">{{ user.username|first|upper }}</span>
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'acervo:faixa_nova' %}">Nova faixa</a></li>
+                            <li><a class="dropdown-item" href="{% url 'acervo:importar_spotify' %}">Importar do Spotify</a></li>
+                            <li><a class="dropdown-item" href="{% url 'acervo:colecao_nova' %}">Nova coleção</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{% url 'accounts:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">Sair</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Entrar</a></li>
+                    <li class="nav-item"><a class="btn tv-btn-primario btn-sm px-3" href="{% url 'accounts:cadastro' %}">Criar conta</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main id="conteudo" class="container-xl flex-grow-1 py-4">
         {% for message in messages %}
             <div class="tv-alert tv-alert-{{ message.tags }}" role="alert">{{ message }}</div>
         {% endfor %}
@@ -39,10 +83,19 @@
     </main>
 
     <footer class="tv-footer">
-        <a href="{% url 'api:docs' %}">Documentação da API</a>
-        <span class="tv-muted">·</span>
-        <a href="{% url 'acervo:importar_spotify' %}">Importar do Spotify</a>
-        <p class="tv-muted">TrackVault — Curadoria, Acervo e Análises Críticas Musicais em um só Lugar.</p>
+        <div class="container-xl d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <span class="tv-logo tv-logo-pequeno">
+                <img src="{% static 'img/logo.svg' %}" alt="" width="22" height="22">
+                Track<span class="tv-logo-destaque">Vault</span>
+            </span>
+            <nav class="d-flex gap-3 flex-wrap justify-content-center" aria-label="Rodapé">
+                <a href="{% url 'api:docs' %}">Documentação da API</a>
+                <a href="{% url 'acervo:importar_spotify' %}">Importar do Spotify</a>
+            </nav>
+            <small class="tv-muted">Curadoria, Acervo e Análises Críticas Musicais em um só Lugar.</small>
+        </div>
     </footer>
+
+    <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}" defer></script>
 </body>
 </html>

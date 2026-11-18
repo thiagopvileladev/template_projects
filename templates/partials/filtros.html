@@ -1,0 +1,14 @@
+{% load tv %}
+{# Campos de um formulário de filtros (GET) em grade responsiva. #}
+{% if form.non_field_errors %}
+    <div class="tv-alert tv-alert-error" role="alert">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+{% endif %}
+<div class="row g-3">
+    {% for field in form %}
+    <div class="{% if field.name == 'q' %}col-12{% else %}col-6 col-md-4 col-lg-3{% endif %}">
+        <label class="form-label small tv-muted mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field|bs }}
+        {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+    </div>
+    {% endfor %}
+</div>

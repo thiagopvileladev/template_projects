@@ -9,18 +9,7 @@
 </div>
 
 <form method="get" class="tv-card tv-filtros" role="search">
-    {% if form.non_field_errors %}
-        <div class="tv-alert tv-alert-error" role="alert">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
-    {% endif %}
-    <div class="tv-filtros-grid">
-        {% for field in form %}
-        <div class="tv-field{% if field.name == 'q' %} tv-filtro-largo{% endif %}">
-            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% for error in field.errors %}<small class="tv-error">{{ error }}</small>{% endfor %}
-        </div>
-        {% endfor %}
-    </div>
+    {% include 'partials/filtros.html' %}
     <div class="tv-actions">
         <button type="submit" class="tv-btn tv-btn-auto">Buscar</button>
         {% if request.GET %}<a href="{% url 'acervo:faixa_lista' %}" class="tv-btn tv-btn-secondary tv-btn-auto">Limpar filtros</a>{% endif %}

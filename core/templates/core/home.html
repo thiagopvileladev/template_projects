@@ -1,6 +1,76 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>TrackVault</h1>
-<p>Curadoria, Acervo e Análises Críticas Musicais em um só Lugar.</p>
+<section class="tv-hero">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-7">
+            <h1>Seu acervo musical, <span class="tv-logo-destaque">curado</span>.</h1>
+            <p>Catalogue álbuns e faixas, registre notas da crítica e as suas, monte coleções temáticas e
+               acompanhe tudo em relatórios. Metadados importados direto do Spotify.</p>
+            <div class="tv-actions">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'acervo:importar_spotify' %}" class="tv-btn tv-btn-auto">Importar do Spotify</a>
+                    <a href="{% url 'acervo:relatorio' %}" class="tv-btn tv-btn-secondary tv-btn-auto">Ver relatórios</a>
+                {% else %}
+                    <a href="{% url 'accounts:cadastro' %}" class="tv-btn tv-btn-auto">Começar a catalogar</a>
+                    <a href="{% url 'acervo:faixa_lista' %}" class="tv-btn tv-btn-secondary tv-btn-auto">Explorar o acervo</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="row g-3">
+                <div class="col-6 col-lg-12 col-xl-6">
+                    <div class="tv-card tv-kpi">
+                        <span class="tv-kpi-valor">{{ total_faixas }}</span>
+                        <span class="tv-muted">Músicas no acervo</span>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-12 col-xl-6">
+                    <div class="tv-card tv-kpi">
+                        <span class="tv-kpi-valor">{{ media_notas|floatformat:1|default:'—' }}</span>
+                        <span class="tv-muted">Média das notas</span>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="tv-card tv-kpi">
+                        <span class="tv-kpi-valor tv-kpi-texto">{{ genero_top|default:'—' }}</span>
+                        <span class="tv-muted">Gênero predominante</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="tv-topo">
+    <h2 class="m-0">Adicionadas recentemente</h2>
+    <a href="{% url 'acervo:faixa_lista' %}?ordem=recentes">Ver todas &rarr;</a>
+</div>
+
+{% if destaques %}
+<div class="tv-grid">
+    {% for faixa in destaques %}
+    <a href="{{ faixa.get_absolute_url }}" class="tv-card tv-album tv-card-faixa">
+        {% if faixa.album.capa_url %}
+            <img src="{{ faixa.album.capa_url }}" alt="Capa de {{ faixa.album.titulo }}" loading="lazy">
+        {% else %}
+            <div class="tv-capa-vazia" aria-hidden="true">♪</div>
+        {% endif %}
+        <strong>{{ faixa.titulo }}</strong>
+        <span class="tv-muted small">{{ faixa.album.artista }}</span>
+        <span class="tv-notas">
+            {% if faixa.media is not None %}<span class="tv-nota" title="Média dos curadores">{{ faixa.media|floatformat:1 }}</span>{% endif %}
+            {% if faixa.pitchfork is not None %}<span class="tv-nota tv-nota-pitchfork" title="Nota Pitchfork">P {{ faixa.pitchfork|floatformat:1 }}</span>{% endif %}
+        </span>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="tv-card text-center">
+    <p class="tv-muted mb-3">O acervo ainda está vazio.</p>
+    {% if user.is_authenticated %}
+        <a href="{% url 'acervo:importar_spotify' %}" class="tv-btn tv-btn-auto">Importar a primeira faixa</a>
+    {% endif %}
+</div>
+{% endif %}
 {% endblock %}
