@@ -1,0 +1,244 @@
+{
+  "info": {
+    "name": "TrackVault API v1",
+    "_postman_id": "8a3f1d2e-7c4b-4e59-9b1a-2f6d0c8e5a71",
+    "description": "Coleção de requisições da API REST do TrackVault (docs/api/guia_api_v1.md).\n\nComo usar:\n1. Importe este arquivo no Postman (ou Insomnia/Thunder Client).\n2. Ajuste as variáveis da coleção: base_url, email e senha de uma conta de teste.\n3. Execute a pasta inteira com o Collection Runner: cada requisição tem testes que conferem o código HTTP e o formato do JSON.\n\nA requisição '1. Obter token' salva o token automaticamente na variável {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "base_url", "value": "http://127.0.0.1:8000/api/v1"},
+    {"key": "email", "value": "curador@exemplo.com"},
+    {"key": "senha", "value": "troque-pela-senha-da-conta-de-teste"},
+    {"key": "token", "value": ""},
+    {"key": "faixa_id", "value": ""},
+    {"key": "avaliacao_id", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "1. Autenticação",
+      "item": [
+        {
+          "name": "1.1 Obter token (200)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const dados = pm.response.json();",
+            "pm.test('Retorna token', () => pm.expect(dados.token).to.be.a('string').and.not.empty);",
+            "pm.collectionVariables.set('token', dados.token);"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{senha}}\"\n}"},
+            "url": "{{base_url}}/auth/token/"
+          }
+        },
+        {
+          "name": "1.2 Senha errada (400)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 400', () => pm.response.to.have.status(400));",
+            "pm.test('Mensagem genérica', () => pm.expect(pm.response.text()).to.include('E-mail ou senha incorretos'));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"senha-errada\"\n}"},
+            "url": "{{base_url}}/auth/token/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Faixas (público)",
+      "item": [
+        {
+          "name": "2.1 Listar faixas (200, paginado)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Content-Type JSON', () => pm.response.to.have.header('Content-Type', 'application/json'));",
+            "const dados = pm.response.json();",
+            "pm.test('Formato paginado', () => pm.expect(dados).to.have.all.keys('count', 'next', 'previous', 'results'));",
+            "if (dados.results.length) {",
+            "  pm.test('Campos do contrato', () => pm.expect(dados.results[0]).to.include.keys('id', 'titulo', 'artista', 'genero', 'bpm'));",
+            "  pm.collectionVariables.set('faixa_id', dados.results[0].id);",
+            "}"
+          ]}}],
+          "request": {"method": "GET", "url": "{{base_url}}/faixas/"}
+        },
+        {
+          "name": "2.2 Filtrar por gênero e artista (200)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.response.json().results.forEach(f => pm.test(`${f.titulo} é eletrônica`, () => pm.expect(f.genero_codigo).to.eql('eletronica')));"
+          ]}}],
+          "request": {"method": "GET", "url": {"raw": "{{base_url}}/faixas/?genero=eletronica&ordem=nota&page_size=5",
+            "host": ["{{base_url}}"], "path": ["faixas", ""],
+            "query": [{"key": "genero", "value": "eletronica"}, {"key": "ordem", "value": "nota"}, {"key": "page_size", "value": "5"}]}}
+        },
+        {
+          "name": "2.3 Filtro inválido (400)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 400', () => pm.response.to.have.status(400));",
+            "pm.test('Indica o campo', () => pm.expect(pm.response.json()).to.have.property('nota_min'));"
+          ]}}],
+          "request": {"method": "GET", "url": {"raw": "{{base_url}}/faixas/?nota_min=50",
+            "host": ["{{base_url}}"], "path": ["faixas", ""], "query": [{"key": "nota_min", "value": "50"}]}}
+        },
+        {
+          "name": "2.4 Detalhar faixa (200)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Tem álbum', () => pm.expect(pm.response.json().album).to.have.property('titulo'));"
+          ]}}],
+          "request": {"method": "GET", "url": "{{base_url}}/faixas/{{faixa_id}}/"}
+        },
+        {
+          "name": "2.5 Faixa inexistente (404)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 404', () => pm.response.to.have.status(404));"
+          ]}}],
+          "request": {"method": "GET", "url": "{{base_url}}/faixas/999999/"}
+        },
+        {
+          "name": "2.6 Acervo é somente leitura (405)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 405', () => pm.response.to.have.status(405));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"titulo\": \"x\"}"},
+            "url": "{{base_url}}/faixas/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Álbuns e coleções (público)",
+      "item": [
+        {
+          "name": "3.1 Listar álbuns (200)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));"
+          ]}}],
+          "request": {"method": "GET", "url": "{{base_url}}/albuns/"}
+        },
+        {
+          "name": "3.2 Listar coleções públicas sem expor e-mail (200)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Nenhum e-mail na resposta', () => pm.expect(pm.response.text()).to.not.match(/[\\w.+-]+@[\\w-]+\\.[\\w.]+/));"
+          ]}}],
+          "request": {"method": "GET", "url": "{{base_url}}/colecoes/"}
+        }
+      ]
+    },
+    {
+      "name": "4. Avaliações",
+      "item": [
+        {
+          "name": "4.1 Criar sem token (401)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 401', () => pm.response.to.have.status(401));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"faixa_id\": {{faixa_id}}, \"nota_pessoal\": 9}"},
+            "url": "{{base_url}}/avaliacoes/"
+          }
+        },
+        {
+          "name": "4.2 Dados inválidos (400)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 400', () => pm.response.to.have.status(400));",
+            "pm.test('Erro na nota', () => pm.expect(pm.response.json()).to.have.property('nota_pessoal'));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"faixa_id\": {{faixa_id}}, \"nota_pessoal\": 11}"},
+            "url": "{{base_url}}/avaliacoes/"
+          }
+        },
+        {
+          "name": "4.3 Registrar avaliação (201)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 201 (ou 400 se a conta já avaliou esta faixa)', () => pm.expect(pm.response.code).to.be.oneOf([201, 400]));",
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('avaliacao_id', pm.response.json().id);",
+            "  pm.test('Autor é o usuário do token', () => pm.expect(pm.response.json().usuario).to.be.a('string'));",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"faixa_id\": {{faixa_id}},\n  \"nota_pessoal\": 9.5,\n  \"resenha\": \"Excelente progressão de acordes no sintetizador principal.\"\n}"},
+            "url": "{{base_url}}/avaliacoes/"
+          }
+        },
+        {
+          "name": "4.4 Avaliar a mesma faixa de novo (400)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 400', () => pm.response.to.have.status(400));",
+            "pm.test('Mensagem de duplicidade', () => pm.expect(pm.response.text()).to.include('Você já avaliou esta faixa'));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"faixa_id\": {{faixa_id}}, \"nota_pessoal\": 5}"},
+            "url": "{{base_url}}/avaliacoes/"
+          }
+        },
+        {
+          "name": "4.5 Alterar a própria avaliação (200)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Nota alterada', () => pm.expect(pm.response.json().nota_pessoal).to.eql(8));"
+          ]}}],
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}, {"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"nota_pessoal\": 8}"},
+            "url": "{{base_url}}/avaliacoes/{{avaliacao_id}}/"
+          }
+        },
+        {
+          "name": "4.6 Excluir a própria avaliação (204)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 204', () => pm.response.to.have.status(204));"
+          ]}}],
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": "{{base_url}}/avaliacoes/{{avaliacao_id}}/"
+          }
+        },
+        {
+          "name": "4.7 Token inválido (401)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 401', () => pm.response.to.have.status(401));"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer token-invalido"}, {"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"faixa_id\": {{faixa_id}}, \"nota_pessoal\": 9}"},
+            "url": "{{base_url}}/avaliacoes/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Documentação",
+      "item": [
+        {
+          "name": "5.1 Esquema OpenAPI (200)",
+          "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('É OpenAPI 3', () => pm.expect(pm.response.text()).to.include('openapi: 3'));"
+          ]}}],
+          "request": {"method": "GET", "url": "{{base_url}}/schema/"}
+        }
+      ]
+    }
+  ]
+}
