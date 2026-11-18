@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Relatório da coleção · TrackVault{% endblock %}
+
+{% block content %}
+<div class="tv-topo">
+    <h1>Relatório da coleção</h1>
+    {% if r %}
+    <div class="tv-actions tv-nao-imprimir">
+        <button type="button" class="tv-btn tv-btn-auto" data-imprimir>Imprimir / Salvar PDF</button>
+        <a href="{% url 'acervo:relatorio_csv' %}{% if query_string %}?{{ query_string }}{% endif %}" class="tv-btn tv-btn-secondary tv-btn-auto">Exportar CSV</a>
+    </div>
+    {% endif %}
+</div>
+
+<form method="get" class="tv-card tv-filtros tv-nao-imprimir">
+    {% if form.non_field_errors %}
+        <div class="tv-alert tv-alert-error" role="alert">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+    {% endif %}
+    <div class="tv-filtros-grid">
+        {% for field in form %}
+        <div class="tv-field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<small class="tv-error">{{ error }}</small>{% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+    <div class="tv-actions">
+        <button type="submit" class="tv-btn tv-btn-auto">Gerar relatório</button>
+        {% if request.GET %}<a href="{% url 'acervo:relatorio' %}" class="tv-btn tv-btn-secondary tv-btn-auto">Limpar filtros</a>{% endif %}
+    </div>
+</form>
+
+{% if r %}
+<p class="tv-muted tv-so-imprimir">
+    TrackVault · Gerado em {{ gerado_em|date:'d/m/Y H:i' }} por {{ user.username }}
+</p>
+<p class="tv-muted">
+    Escopo: {% if form.cleaned_data.escopo == 'minhas' %}faixas avaliadas por você{% else %}todo o acervo{% endif %}
+    {% if form.cleaned_data.genero %}· gênero {{ form.cleaned_data.genero }}{% endif %}
+    {% if form.cleaned_data.ano_de or form.cleaned_data.ano_ate %}· lançamento {{ form.cleaned_data.ano_de|default:'…' }}–{{ form.cleaned_data.ano_ate|default:'…' }}{% endif %}
+    {% if form.cleaned_data.nota_min is not None or form.cleaned_data.nota_max is not None %}· notas {{ form.cleaned_data.nota_min|default_if_none:'0' }}–{{ form.cleaned_data.nota_max|default_if_none:'10' }}{% endif %}
+</p>
+
+{% if r.total_faixas %}
+<section class="tv-kpis" aria-label="Indicadores">
+    <div class="tv-card tv-kpi">
+        <span class="tv-kpi-valor">{{ r.media_geral|floatformat:1|default:'—' }}</span>
+        <span class="tv-muted">Média geral da coleção</span>
+        <small class="tv-muted">{{ r.total_avaliacoes }} avaliaç{{ r.total_avaliacoes|pluralize:'ão,ões' }}</small>
+    </div>
+    <div class="tv-card tv-kpi">
+        <span class="tv-kpi-valor">{{ r.total_faixas }}</span>
+        <span class="tv-muted">Faixas</span>
+        <small class="tv-muted">em {{ r.total_albuns }} álbu{{ r.total_albuns|pluralize:'m,ns' }}</small>
+    </div>
+    <div class="tv-card tv-kpi">
+        <span class="tv-kpi-valor tv-kpi-texto">{{ r.artista_top.faixa__album__artista|default:'—' }}</span>
+        <span class="tv-muted">Artista mais avaliado</span>
+        {% if r.artista_top %}<small class="tv-muted">{{ r.artista_top.qtd }} avaliaç{{ r.artista_top.qtd|pluralize:'ão,ões' }} · média {{ r.artista_top.media|floatformat:1 }}</small>{% endif %}
+    </div>
+    <div class="tv-card tv-kpi">
+        <span class="tv-kpi-valor tv-kpi-texto">{{ r.genero_top.rotulo|default:'—' }}</span>
+        <span class="tv-muted">Gênero predominante</span>
+        {% if r.genero_top %}<small class="tv-muted">{{ r.genero_top.percentual }}% das faixas</small>{% endif %}
+    </div>
+    <div class="tv-card tv-kpi">
+        <span class="tv-kpi-valor">{{ r.media_bpm|floatformat:0|default:'—' }}</span>
+        <span class="tv-muted">BPM médio</span>
+    </div>
+    <div class="tv-card tv-kpi">
+        <span class="tv-kpi-valor">{{ r.media_popularidade|floatformat:0|default:'—' }}</span>
+        <span class="tv-muted">Popularidade média (Spotify)</span>
+        {% if r.media_pitchfork is not None %}<small class="tv-muted">Média Pitchfork: {{ r.media_pitchfork|floatformat:1 }}</small>{% endif %}
+    </div>
+</section>
+
+<section class="tv-card tv-secao">
+    <h2>Faixas por gênero</h2>
+    <div class="tv-barras" role="table" aria-label="Faixas por gênero">
+        <div class="tv-barra-linha tv-barra-cabecalho" role="row">
+            <span role="columnheader">Gênero</span>
+            <span role="columnheader">Faixas</span>
+            <span role="columnheader">BPM médio</span>
+            <span role="columnheader">Nota média</span>
+        </div>
+        {% for g in r.por_genero %}
+        <div class="tv-barra-linha" role="row">
+            <span role="cell">{{ g.rotulo }}</span>
+            <span role="cell" class="tv-barra-celula">
+                <span class="tv-barra" style="width: {{ g.largura }}%"></span>
+                <span class="tv-barra-valor">{{ g.qtd }} ({{ g.percentual }}%)</span>
+            </span>
+            <span role="cell">{{ g.media_bpm|floatformat:0|default:'—' }}</span>
+            <span role="cell">{{ g.media_nota|floatformat:1|default:'—' }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+{% if r.top_faixas %}
+<section class="tv-card tv-secao">
+    <h2>As 10 mais bem avaliadas</h2>
+    <ol class="tv-ranking">
+        {% for f in r.top_faixas %}
+        <li><a href="{{ f.get_absolute_url }}">{{ f.titulo }}</a> <span class="tv-muted">— {{ f.album.artista }}</span> <span class="tv-nota">{{ f.media|floatformat:1 }}</span></li>
+        {% endfor %}
+    </ol>
+</section>
+{% endif %}
+
+<section class="tv-secao">
+    <h2>Tabela consolidada</h2>
+    {% if r.tabela_cortada %}<p class="tv-muted">Mostrando as primeiras {{ r.faixas|length }} faixas. Use o CSV para a lista completa ou refine os filtros.</p>{% endif %}
+    <table class="tv-tabela">
+        <thead><tr><th>Título</th><th>Artista</th><th>Álbum</th><th>Ano</th><th>Gênero</th><th>BPM</th><th>Média</th><th>Avaliações</th></tr></thead>
+        <tbody>
+        {% for f in r.faixas %}
+            <tr>
+                <td>{{ f.titulo }}</td>
+                <td>{{ f.album.artista }}</td>
+                <td>{{ f.album.titulo }}</td>
+                <td>{{ f.album.ano_lancamento|default:'—' }}</td>
+                <td>{{ f.get_genero_display }}</td>
+                <td>{{ f.bpm|default:'—' }}</td>
+                <td>{{ f.media|floatformat:1|default:'—' }}</td>
+                <td>{{ f.total_avaliacoes }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% else %}
+<p class="tv-muted">Nenhuma faixa corresponde aos filtros informados.</p>
+{% endif %}
+{% endif %}
+
+<script src="{% static 'js/relatorio.js' %}" defer></script>
+{% endblock %}

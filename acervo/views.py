@@ -8,13 +8,17 @@ Regras de acesso:
   Coleções privadas só aparecem para o dono.
 """
 
+import csv
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Avg, Count, Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.views.generic import (
     CreateView,
@@ -27,6 +31,7 @@ from django.views.generic import (
 from .busca import BuscaFaixaForm, filtrar_faixas
 from .forms import AlbumForm, AvaliacaoForm, ColecaoForm, FaixaForm
 from .models import Album, Avaliacao, Colecao, Faixa
+from .relatorios import RelatorioForm, gerar_relatorio
 from .services import spotify_service
 
 ITENS_POR_PAGINA = 20
@@ -249,6 +254,58 @@ def _album_da_importacao(dados):
         capa_url=dados.capa_url,
         spotify_id=dados.album_spotify_id,
     )
+
+
+# --- Relatórios (UC05) ----------------------------------------------------------
+
+def _relatorio_do_request(request):
+    form = RelatorioForm(request.GET or None)
+    if form.is_bound and not form.is_valid():
+        return form, None
+    filtros = form.cleaned_data if form.is_bound else {}
+    return form, gerar_relatorio(filtros, request.user)
+
+
+@login_required
+def relatorio(request):
+    form, dados = _relatorio_do_request(request)
+    return render(request, 'acervo/relatorio.html', {
+        'form': form,
+        'r': dados,
+        'gerado_em': timezone.localtime(),
+        'query_string': request.GET.urlencode(),
+    })
+
+
+@login_required
+def relatorio_csv(request):
+    """Exporta a tabela consolidada em CSV (abre no Excel/Planilhas)."""
+    form, dados = _relatorio_do_request(request)
+    if dados is None:
+        messages.error(request, 'Corrija os filtros antes de exportar.')
+        return redirect('acervo:relatorio')
+
+    resposta = HttpResponse(content_type='text/csv; charset=utf-8')
+    resposta['Content-Disposition'] = 'attachment; filename="trackvault-relatorio.csv"'
+    resposta.write('﻿')  # BOM: o Excel reconhece os acentos
+    escritor = csv.writer(resposta, delimiter=';')
+    escritor.writerow(['Título', 'Artista', 'Álbum', 'Ano', 'Gênero', 'BPM',
+                       'Popularidade', 'Média das notas', 'Avaliações'])
+    for f in dados['faixas']:
+        escritor.writerow([
+            _csv_seguro(f.titulo), _csv_seguro(f.album.artista), _csv_seguro(f.album.titulo),
+            f.album.ano_lancamento or '', f.get_genero_display(), f.bpm or '',
+            f.popularidade if f.popularidade is not None else '',
+            f'{f.media:.1f}'.replace('.', ',') if f.media is not None else '',
+            f.total_avaliacoes,
+        ])
+    return resposta
+
+
+def _csv_seguro(texto):
+    # Evita "CSV injection": células começando com = + - @ viram fórmulas no Excel.
+    texto = str(texto)
+    return f"'{texto}" if texto[:1] in ('=', '+', '-', '@', '\t', '\r') else texto
 
 
 # --- Avaliações (uma por usuário e faixa) -------------------------------------

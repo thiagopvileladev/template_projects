@@ -21,6 +21,9 @@ urlpatterns = [
     # Avaliações
     path('faixas/<int:pk>/avaliar/', views.avaliar_faixa, name='faixa_avaliar'),
     path('avaliacoes/<int:pk>/excluir/', views.excluir_avaliacao, name='avaliacao_excluir'),
+    # Relatórios
+    path('relatorios/', views.relatorio, name='relatorio'),
+    path('relatorios/csv/', views.relatorio_csv, name='relatorio_csv'),
     # Coleções
     path('colecoes/', views.ColecaoListView.as_view(), name='colecao_lista'),
     path('colecoes/nova/', views.ColecaoCreateView.as_view(), name='colecao_nova'),
