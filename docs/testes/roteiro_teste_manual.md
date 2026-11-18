@@ -13,11 +13,10 @@ Complementa os testes automatizados ([`relatorio_testes.md`](relatorio_testes.md
 
 | Campo | Valor |
 |---|---|
-| Data |hoje |
-| Executado por |Thiago |
-| Ambiente / URL |https://trackvault-3hpa.onrender.com |
-| Commit testado |f163cdc
- |
+| Data | 18/11/2026 |
+| Executado por | Thiago Paranaiba Vilela (CT01–CT17) e Marcio Tavares (CT18–CT38) |
+| Ambiente / URL | https://trackvault-3hpa.onrender.com |
+| Commit testado | `f163cdc` |
 | Navegador(es) |Chrome 131 no Windows 11 e Chrome no celular |
 
 **Resultado:** marque ✅ (passou), ❌ (falhou, descreva em Observações) ou ⚠️ (passou com ressalva).
