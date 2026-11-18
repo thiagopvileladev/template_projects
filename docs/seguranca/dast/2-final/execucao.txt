@@ -1,0 +1,9 @@
+﻿Ferramenta: OWASP ZAP (zap-2.17.0), Automation Framework, modo -cmd
+Plano: docs/seguranca/dast/zap-plano.yaml
+Alvo: https://trackvault-3hpa.onrender.com (aplicação do próprio grupo)
+Commit implantado no momento da varredura: 100bb0f (branch main)
+Início: 18/11/2026 09:30:46
+Fim: 18/11/2026 10:11:21
+Duração: 40.6 min
+Código de saída do ZAP: 0
+Executado por: bauzzer345
