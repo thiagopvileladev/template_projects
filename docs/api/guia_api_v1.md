@@ -5,7 +5,6 @@ Documentação interativa (OpenAPI), gerada a partir do código:
 | Formato | Caminho |
 |---|---|
 | Swagger UI (testar no navegador) | `/api/v1/docs/` |
-| Redoc (leitura) | `/api/v1/redoc/` |
 | Esquema OpenAPI 3 (YAML) | `/api/v1/schema/` |
 
 - **URL-base:** `https://<domínio-da-aplicação>/api/v1/` (local: `http://127.0.0.1:8000/api/v1/`)

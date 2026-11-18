@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'drf_spectacular',
+    'drf_spectacular_sidecar',  # Swagger UI servido localmente (DAST-06)
     # Apps do projeto
     'core',
     'accounts',
@@ -60,6 +61,10 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'accounts.Usuario'
 
 LOGIN_URL = 'accounts:login'
+
+# O cookie CSRF não é lido por JavaScript no TrackVault (achado DAST-05).
+CSRF_COOKIE_HTTPONLY = True
+
 LOGIN_REDIRECT_URL = 'core:home'
 LOGOUT_REDIRECT_URL = 'core:home'
 
@@ -67,6 +72,8 @@ MIDDLEWARE = [
     # Primeiro: define o IP real do cliente antes de qualquer outro uso.
     'core.middleware.IPRealDoClienteMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    # CSP e Permissions-Policy (achado DAST-02).
+    'core.middleware.CabecalhosSegurancaMiddleware',
     # WhiteNoise serve os arquivos estáticos em produção sem servidor extra.
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -156,6 +163,12 @@ if 'test' in sys.argv:
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Remove Access-Control-Allow-Origin: * dos estáticos (achado DAST-03).
+# O WhiteNoise exige a própria função (não o caminho em texto).
+from core.middleware import remover_cors_dos_estaticos  # noqa: E402
+
+WHITENOISE_ADD_HEADERS_FUNCTION = remover_cors_dos_estaticos
+
 
 # --- Cache ------------------------------------------------------------------------
 # Usado pelo token do Spotify, pelos limites da API e pelo bloqueio de login.
@@ -213,6 +226,11 @@ SPECTACULAR_SETTINGS = {
     ),
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    # Swagger UI hospedado no próprio site, sem CDN externo (achado DAST-06).
+    'SWAGGER_UI_DIST': 'SIDECAR',
+    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
+    # Não envia o esquema para o validador externo do swagger.io.
+    'SWAGGER_UI_SETTINGS': {'validatorUrl': None, 'deepLinking': True, 'persistAuthorization': True},
     'COMPONENT_SPLIT_REQUEST': True,
 }
 

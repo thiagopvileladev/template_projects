@@ -79,7 +79,7 @@
         <div class="tv-barra-linha" role="row">
             <span role="cell">{{ g.rotulo }}</span>
             <span role="cell" class="tv-barra-celula">
-                <span class="tv-barra" style="width: {{ g.largura }}%"></span>
+                <span class="tv-barra tv-w-{{ g.largura }}"></span>
                 <span class="tv-barra-valor">{{ g.qtd }} ({{ g.percentual }}%)</span>
             </span>
             <span role="cell">{{ g.media_bpm|floatformat:0|default:'—' }}</span>

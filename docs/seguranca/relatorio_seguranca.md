@@ -5,7 +5,7 @@ Síntese das análises de segurança exigidas na seção 7.5 da especificação:
 | Análise | Situação | Evidências |
 |---|---|---|
 | SAST | ✅ Concluída | [`sast/1-inicial/`](sast/1-inicial/), [`sast/2-final/`](sast/2-final/) |
-| DAST | ⏳ Pendente: depende da aplicação publicada (ver seção 2) | `dast/` |
+| DAST | ⏳ Análise inicial e correções concluídas; nova varredura pendente (seção 2.5) | [`dast/1-inicial/`](dast/1-inicial/), [`dast/zap-plano.yaml`](dast/zap-plano.yaml) |
 
 ---
 
@@ -119,12 +119,76 @@ pip-audit -r requirements.txt
 
 ## 2. DAST — Análise dinâmica
 
-⏳ **Pendente.** O DAST precisa da aplicação publicada (etapa 11). Planejamento:
+### 2.1 Antes: escopo e alvo
 
-| Item | Plano |
+| Item | Valor |
 |---|---|
-| Ferramenta | OWASP ZAP (Baseline Scan e Full Scan autenticado), via Docker ou ZAP Desktop |
-| Alvo | **Somente** a URL do TrackVault no Render, do próprio grupo (regra ética da seção 7.5). Não testar Spotify, Supabase nem o domínio do Render. |
-| Dados | Banco com os dados de demonstração (`popular_demo`); nenhum dado pessoal real |
-| Procedimento | Varredura inicial → triagem (severidade, probabilidade, falsos positivos) → correções → nova varredura e comparação |
-| Pontos de atenção previstos | Ausência de `Content-Security-Policy`; recursos de terceiros (Google Fonts, Swagger UI via CDN) |
+| Alvo | `https://trackvault-3hpa.onrender.com`, aplicação do próprio grupo, hospedada na conta do grupo no Render (regra ética da seção 7.5) |
+| Fora do escopo | Spotify, Supabase, Cloudflare, Render e qualquer domínio de terceiros: os contextos do ZAP só incluem o domínio do TrackVault |
+| Commit implantado | `f4e568d` (branch `main`) |
+| Dados | Banco de produção apenas com os dados fictícios de demonstração (`popular_demo`); nenhum dado pessoal real |
+| Rotas excluídas da varredura **ativa** | `/contas/cadastro/` (o ataque criaria centenas de contas falsas no banco de produção) e `/contas/sair/` (encerraria a sessão). Essas rotas passam pelo spider e pela varredura passiva. |
+| Autenticação | Varredura sem login. As áreas logadas são cobertas pela varredura passiva das páginas públicas, pelos testes automatizados de controle de acesso e pelos testes de regressão (seção 2.4). |
+
+### 2.2 Durante: ferramenta e execução
+
+| Item | Valor |
+|---|---|
+| Ferramenta | **OWASP ZAP 2.17.0**, Automation Framework, modo linha de comando (`-cmd`) |
+| Configuração (versionada) | [`dast/zap-plano.yaml`](dast/zap-plano.yaml): importação OpenAPI (`/api/v1/schema/`) → spider (profundidade 6) → varredura passiva → varredura ativa (2 threads, 150 ms entre requisições, máx. 3 min por regra e 40 min no total) → relatórios HTML/JSON/MD |
+| Execução | [`dast/rodar_zap.ps1`](dast/rodar_zap.ps1), que registra data, duração, commit e responsável em `execucao.txt` |
+| Data e duração | 18/11/2026, 08:28 → 09:08 (**40,5 min**); executado por Marcio Tavares |
+| Cobertura | 14 URLs importadas da API + 88 URLs descobertas pelo spider |
+| Relatórios brutos | [`dast/1-inicial/`](dast/1-inicial/) (`zap-relatorio.html`, `.json`, `.md`, log da execução) |
+
+### 2.3 Resultado da varredura inicial
+
+| Risco (ZAP) | Tipos de alerta |
+|---|---|
+| Alto | 1 |
+| Médio | 3 |
+| Baixo | 2 |
+| Informativo | 6 |
+| **Total** | **12** |
+
+### 2.4 Depois: triagem, falsos positivos e correções
+
+| ID | Alerta do ZAP (plugin) | Risco ZAP | Veredito | Prioridade | Tratamento |
+|---|---|---|---|---|---|
+| DAST-01 | SQL Injection – SQLite (Time Based) (40024) em `/faixas/?artista=` e `PUT /api/v1/avaliacoes/{id}/` | Alto | **Falso positivo** | — | Ver análise abaixo. Teste de regressão `core/tests_seguranca.py::InjecaoSqlTests`. |
+| DAST-02 | Content Security Policy Header Not Set (10038) | Médio | **Confirmado** | **1** | `CabecalhosSegurancaMiddleware` (`core/middleware.py`) envia CSP restritiva: `default-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none'; object-src 'none'...`. Todo JS/CSS inline foi removido dos templates (confirmação de exclusão em `static/js/trackvault.js`, barras do relatório com classes CSS). Só a página do Swagger aceita CSS inline (exigência do Swagger UI); scripts continuam restritos. Também foi adicionado `Permissions-Policy`. |
+| DAST-04 | Sub Resource Integrity Attribute Missing (90003) | Médio | **Confirmado** | **2** | O Google Fonts gera o CSS dinamicamente, o que impede usar SRI. As fontes Inter e Montserrat (SIL OFL 1.1) passaram a ser hospedadas no próprio site (`static/fonts/`), eliminando a dependência externa e o envio do IP dos visitantes ao Google. |
+| DAST-06 | Cross-Domain JavaScript Source File Inclusion (10017) | Baixo | **Confirmado** | **3** | O Swagger UI era carregado de `cdn.jsdelivr.net/npm/swagger-ui-dist@latest`: uma versão que muda sozinha e que um comprometimento do CDN poderia alterar (cadeia de suprimentos). Passou a ser servido localmente (`drf-spectacular-sidecar`, versão fixa) pela `SpectacularSwaggerSplitView`, sem script inline. O Redoc, que carregava Google Fonts e script inline, foi removido; o Swagger e o esquema OpenAPI continuam documentando toda a API. |
+| DAST-05 | Cookie No HttpOnly Flag (10010), cookie `csrftoken` | Baixo | **Confirmado** | **4** | `CSRF_COOKIE_HTTPONLY = True`. O TrackVault não lê o cookie CSRF por JavaScript (formulários usam o campo oculto; a API usa token Bearer). O cookie de sessão já era HttpOnly. |
+| DAST-03 | Cross-Domain Misconfiguration (10098), `Access-Control-Allow-Origin: *` nos estáticos | Médio | Confirmado, impacto baixo | **5** | O WhiteNoise adiciona o cabeçalho por padrão. Os arquivos são públicos e sem credenciais, mas o site não precisa servi-los a outras origens: o cabeçalho é removido (`WHITENOISE_ADD_HEADERS_FUNCTION`). |
+| — | Information Disclosure – Suspicious Comments (10027) | Info | Falso positivo | — | Comentário de licença dentro do `bootstrap.bundle.min.js` (biblioteca de terceiros); não expõe informação do TrackVault. |
+| — | User Controllable HTML Element Attribute (10031) | Info | Falso positivo | — | Os filtros da busca são devolvidos nos campos do formulário (comportamento esperado). O Django escapa todo valor exibido (autoescape), e a varredura ativa de XSS não encontrou injeção. |
+| — | Re-examine Cache-control Directives (10015) | Info | Aceito | — | Páginas públicas e respostas da API pública sem dados pessoais. |
+| — | Authentication Request Identified (10111), Session Management Response Identified (10112), Modern Web Application (10109) | Info | Informativo | — | Apenas identificam formulários de login e o uso de JavaScript; não são vulnerabilidades. |
+
+#### Análise do DAST-01 (falso positivo)
+
+O ZAP mede se o tempo de resposta cresce quando envia uma expressão "pesada" de SQLite (`randomblob`). A própria evidência do alerta não sustenta a hipótese: requisição original **450 ms**, ataque menor **430 ms** (mais rápido), ataque 10× maior **668 ms**. A diferença é compatível com a variação de rede de uma instância gratuita sob carga.
+
+Reprodução controlada em produção (18/11/2026, 8 requisições de cada tipo em `/faixas/?artista=`):
+
+| Valor enviado | Mediana | Mín. | Máx. |
+|---|---|---|---|
+| `ZAP` (normal) | 955 ms | 741 ms | 1169 ms |
+| `case randomblob(100000000) ...` | 879 ms | 785 ms | 1837 ms |
+| `case randomblob(1000000000) ...` (10× maior) | 827 ms | 746 ms | 1164 ms |
+| `ZAP' \|\| pg_sleep(5) \|\| '` (PostgreSQL) | — | — | bloqueado (HTTP 403) antes de chegar à aplicação |
+
+Não há correlação entre o tamanho do ataque e o tempo de resposta. Além disso: (1) o banco é PostgreSQL, que não tem `randomblob`; (2) toda consulta passa pelo ORM do Django, que envia os valores como parâmetros separados do SQL; (3) `PUT /api/v1/avaliacoes/{id}/` exige token e respondeu 401 sem consultar o banco.
+
+#### Riscos aceitos
+
+| Risco | Justificativa |
+|---|---|
+| `style-src 'unsafe-inline'` apenas em `/api/v1/docs/` | O template do drf-spectacular e o Swagger UI usam CSS inline. CSS inline não executa código; `script-src` continua `'self'` nessa página. |
+| `img-src` aceita qualquer origem HTTPS | As capas vêm do CDN do Spotify e o curador pode informar a URL de uma capa manualmente. Imagens não executam código. |
+| Cadastro e logout fora da varredura ativa | Evita poluir o banco de produção com contas falsas. O cadastro tem validação no servidor, proteção CSRF e testes automatizados (`accounts/tests.py`). |
+
+### 2.5 Verificação: nova varredura após as correções
+
+⏳ **Pendente.** Após o deploy das correções, a varredura é repetida com o mesmo plano (`rodar_zap.ps1 -Rodada 2-final`) e os resultados são comparados aqui.

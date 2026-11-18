@@ -41,7 +41,7 @@ Execução de 17/11/2026 — Python 3.14.0, Django 5.2.19.
 | UC03 — Importar do Spotify | `acervo/tests_spotify.py` | 19 | Conversão do JSON, timeout de 5 s, cache do token, renovação após 401, falha de conexão, HTTP 429, JSON inválido, campos ausentes, credenciais ausentes, fluxo completo de importação e fallback manual |
 | UC04 — Buscar músicas | `acervo/tests.py` (`BuscaTests`) | 11 | Busca livre, filtros combinados, nota mínima, faixa de BPM, coleção, ordenação, nenhum resultado, filtros inválidos validados no servidor, paginação preservando filtros |
 | UC05 — Relatório | `acervo/tests_relatorio.py` | 12 | Cada indicador conferido com valores calculados à mão, escopo "minhas avaliações", filtros, intervalo inválido, exportação CSV e proteção contra CSV injection |
-| UC06 — API REST | `api/tests.py` | 22 | Códigos 200, 201, 204, 400, 401, 403, 404, 405 e 429; paginação; filtros; Bearer token; e-mails não expostos; Swagger/Redoc/OpenAPI no ar |
+| UC06 — API REST | `api/tests.py` | 22 | Códigos 200, 201, 204, 400, 401, 403, 404, 405 e 429; paginação; filtros; Bearer token; e-mails não expostos; Swagger/OpenAPI no ar |
 | Página inicial e dados de demonstração | `core/tests.py` | 5 | Indicadores e cards da home, menu conforme login, comando `popular_demo` idempotente |
 
 ### Cobertura por módulo (principais)

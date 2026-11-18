@@ -58,7 +58,7 @@ class RelatorioTests(TestCase):
         rock = next(g for g in r['por_genero'] if g['genero'] == 'rock')
         self.assertEqual(rock['qtd'], 1)
         self.assertEqual(rock['media_nota'], 10)
-        self.assertEqual(rock['largura'], 33)  # 1 de 3 (maior grupo)
+        self.assertEqual(rock['largura'], 35)  # 1 de 3 (maior grupo) = 33% -> 35% (passos de 5)
 
     def test_escopo_minhas_avaliacoes(self):
         _, r = self.gerar(escopo='minhas')

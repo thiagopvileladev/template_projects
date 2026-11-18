@@ -1,9 +1,5 @@
 from django.urls import include, path
-from drf_spectacular.views import (
-    SpectacularAPIView,
-    SpectacularRedocView,
-    SpectacularSwaggerView,
-)
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerSplitView
 from rest_framework.routers import DefaultRouter
 
 from . import views
@@ -18,9 +14,11 @@ router.register('colecoes', views.ColecaoViewSet, basename='colecao')
 
 urlpatterns = [
     path('auth/token/', views.TokenView.as_view(), name='token'),
-    # Documentação (PDF 7.3): esquema OpenAPI, Swagger UI e Redoc.
+    # Documentação (PDF 7.3): esquema OpenAPI e Swagger UI.
+    # SplitView: o script de inicialização é um arquivo separado (sem JS inline,
+    # compatível com a Content-Security-Policy). O Redoc foi removido: carregava
+    # Google Fonts e script inline, e o Swagger já cobre a documentação (DAST-06).
     path('schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('docs/', SpectacularSwaggerView.as_view(url_name='api:schema'), name='docs'),
-    path('redoc/', SpectacularRedocView.as_view(url_name='api:schema'), name='redoc'),
+    path('docs/', SpectacularSwaggerSplitView.as_view(url_name='api:schema'), name='docs'),
     path('', include(router.urls)),
 ]

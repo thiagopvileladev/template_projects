@@ -263,3 +263,28 @@ a:hover { text-decoration: underline; }
     a { color: #000 !important; }
     .tv-nota { border: 1px solid #000; background: none; color: #000; }
 }
+
+/* Larguras das barras do relatório em passos de 5% (sem style inline: CSP, achado DAST-02) */
+.tv-w-0 { width: 0%; }
+.tv-w-5 { width: 5%; }
+.tv-w-10 { width: 10%; }
+.tv-w-15 { width: 15%; }
+.tv-w-20 { width: 20%; }
+.tv-w-25 { width: 25%; }
+.tv-w-30 { width: 30%; }
+.tv-w-35 { width: 35%; }
+.tv-w-40 { width: 40%; }
+.tv-w-45 { width: 45%; }
+.tv-w-50 { width: 50%; }
+.tv-w-55 { width: 55%; }
+.tv-w-60 { width: 60%; }
+.tv-w-65 { width: 65%; }
+.tv-w-70 { width: 70%; }
+.tv-w-75 { width: 75%; }
+.tv-w-80 { width: 80%; }
+.tv-w-85 { width: 85%; }
+.tv-w-90 { width: 90%; }
+.tv-w-95 { width: 95%; }
+.tv-w-100 { width: 100%; }
+
+.tv-erro-500 { margin-top: 15vh; text-align: center; }

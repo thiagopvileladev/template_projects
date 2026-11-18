@@ -210,9 +210,10 @@ class AvaliacoesAPITests(BaseAPITest):
 
 
 class DocumentacaoAPITests(BaseAPITest):
-    def test_swagger_redoc_e_schema(self):
+    def test_swagger_e_schema(self):
         self.assertEqual(self.client.get(f'{BASE}/docs/').status_code, 200)
-        self.assertEqual(self.client.get(f'{BASE}/redoc/').status_code, 200)
+        # Script de inicialização do Swagger servido à parte (sem JS inline).
+        self.assertEqual(self.client.get(f'{BASE}/docs/', {'script': ''}).status_code, 200)
         schema = self.client.get(f'{BASE}/schema/')
         self.assertEqual(schema.status_code, 200)
         self.assertIn(b'/api/v1/avaliacoes/', schema.content)

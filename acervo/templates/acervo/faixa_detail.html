@@ -43,7 +43,7 @@
     {% if avaliacao.usuario == user %}
     <form method="post" action="{% url 'acervo:avaliacao_excluir' avaliacao.pk %}" class="tv-inline">
         {% csrf_token %}
-        <button type="submit" class="tv-link tv-error" onclick="return confirm('Excluir sua avaliação?')">Excluir minha avaliação</button>
+        <button type="submit" class="tv-link tv-error" data-confirmar="Excluir sua avaliação?">Excluir minha avaliação</button>
     </form>
     {% endif %}
 </article>

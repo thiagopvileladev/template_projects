@@ -91,7 +91,8 @@ def gerar_relatorio(filtros, usuario):
         g['rotulo'] = rotulos.get(g['genero'], g['genero'])
         g['media_nota'] = medias_genero.get(g['genero'])
         g['percentual'] = round(100 * g['qtd'] / totais['total_faixas']) if totais['total_faixas'] else 0
-        g['largura'] = round(100 * g['qtd'] / maior) if maior else 0  # barra do gráfico
+        # Largura da barra em passos de 5% (classes CSS tv-w-N, sem style inline).
+        g['largura'] = 5 * round(20 * g['qtd'] / maior) if maior else 0
 
     return {
         **totais,
