@@ -18,7 +18,7 @@ class FaixaForm(forms.ModelForm):
         help_texts = {
             'bpm': 'Andamento em batidas por minuto (20 a 300).',
             'duracao_ms': 'Duração em milissegundos (ex.: 3:30 = 210000).',
-            'popularidade': 'De 0 a 100, preenchido pelo Spotify quando importado.',
+            'popularidade': 'Opcional, de 0 a 100. Preenchido na importação quando o Spotify fornecer.',
         }
 
     def clean_isrc(self):

@@ -6,6 +6,7 @@ A especificação do trabalho (seção 7) permite alterações de escopo ou arqu
 |---|---|---|---|
 | 1 | Frontend em React (`documento_arquitetura.md`, seção 2) | Templates Django + Bootstrap 5 | O backlog (TK09) e os protótipos (Django Form) já previam templates Django. Uma única aplicação simplifica o deploy e mantém a arquitetura MTV descrita no mesmo documento. |
 | 2 | BPM e danceability importados do Spotify | BPM preenchido manualmente pelo curador | O Spotify descontinuou o endpoint `audio-features` para aplicações novas em novembro de 2024. O documento de visão já previa esse risco (Risco 01). |
+| 2b | Popularidade importada do Spotify (UC03, UC05) | Campo `popularidade` mantido, mas opcional; preenchido apenas quando o Spotify enviar | Em teste real (17/11/2026) a Spotify Web API não retornou `popularity` para o app em modo de desenvolvimento. A importação continua funcionando com os demais dados (título, artista, álbum, ano, capa, duração e ISRC) e o indicador de popularidade do relatório mostra "—" quando não há dados. |
 | 3 | Entidade FAIXA sem `genero`, `bpm` e `popularidade` | Campos adicionados à tabela `acervo_faixa` | Esses campos já eram usados no contrato da API, nos protótipos e no UC05 (relatórios), mas faltavam no DER. |
 | 4 | Relacionamento N:N FAIXA–COLECAO sem tabela associativa | Tabela `acervo_colecao_faixas` criada pelo `ManyToManyField` | Implementação padrão do Django para relacionamentos N:N. |
 | 5 | Faixa sem identificador do Spotify | Campo `spotify_id` (único) em FAIXA | Evita importar a mesma faixa duas vezes. |
