@@ -27,6 +27,7 @@ from django.views.generic import (
 from .busca import BuscaFaixaForm, filtrar_faixas
 from .forms import AlbumForm, AvaliacaoForm, ColecaoForm, FaixaForm
 from .models import Album, Avaliacao, Colecao, Faixa
+from .services import spotify_service
 
 ITENS_POR_PAGINA = 20
 
@@ -130,12 +131,23 @@ class FaixaCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     extra_context = {'titulo_pagina': 'Nova faixa', 'cancelar_url': reverse_lazy('acervo:faixa_lista')}
 
     def get_initial(self):
-        # Permite chegar já com o álbum escolhido: /faixas/nova/?album=3
         initial = super().get_initial()
+        # Permite chegar já com o álbum escolhido: /faixas/nova/?album=3
         album_id = self.request.GET.get('album')
         if album_id and album_id.isdigit():
             initial['album'] = album_id
+        # Dados vindos da importação do Spotify (UC03, passo 4).
+        if self.request.method == 'GET':
+            self.importado = self.request.session.pop(SESSAO_IMPORTACAO, None)
+            if self.importado:
+                initial.update(self.importado)
         return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['importado_spotify'] = getattr(self, 'importado', None)
+        context['spotify_url'] = reverse('acervo:importar_spotify')
+        return context
 
     def get_success_url(self):
         return reverse('acervo:faixa_detalhe', args=[self.object.pk])
@@ -158,6 +170,85 @@ class FaixaDeleteView(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     success_url = reverse_lazy('acervo:faixa_lista')
     success_message = 'Faixa excluída.'
     extra_context = {'aviso': 'As avaliações desta faixa também serão excluídas.'}
+
+
+# --- Importação do Spotify (UC03) ---------------------------------------------
+
+SESSAO_IMPORTACAO = 'importacao_spotify'
+
+
+@login_required
+def importar_spotify(request):
+    """
+    GET  ?q=termo  -> pesquisa no Spotify e lista os resultados.
+    POST spotify_id -> importa a faixa escolhida: cria/reaproveita o álbum e
+                       abre o formulário de nova faixa já preenchido.
+    Em qualquer falha do Spotify, mostra a mensagem e oferece o cadastro manual.
+    """
+    if request.method == 'POST':
+        try:
+            dados = spotify_service.obter_faixa(request.POST.get('spotify_id', ''))
+        except spotify_service.SpotifyIndisponivel as erro:
+            messages.warning(request, str(erro))
+            return redirect('acervo:importar_spotify')
+
+        existente = Faixa.objects.filter(spotify_id=dados.spotify_id).first()
+        if existente:
+            messages.info(request, 'Esta faixa já está no acervo.')
+            return redirect(existente)
+
+        album = _album_da_importacao(dados)
+        request.session[SESSAO_IMPORTACAO] = {
+            'album': album.pk,
+            'titulo': dados.titulo,
+            'duracao_ms': dados.duracao_ms,
+            # ISRC é único: não sugere um que já pertence a outra faixa.
+            'isrc': dados.isrc if dados.isrc and not Faixa.objects.filter(isrc=dados.isrc).exists() else '',
+            'popularidade': dados.popularidade,
+            'spotify_id': dados.spotify_id,
+        }
+        return redirect('acervo:faixa_nova')
+
+    termo = request.GET.get('q', '').strip()[:100]
+    resultados, erro = [], None
+    if termo:
+        try:
+            resultados = spotify_service.buscar_faixas(termo)
+        except spotify_service.SpotifyIndisponivel as e:
+            erro = str(e)
+
+    return render(request, 'acervo/importar_spotify.html', {
+        'termo': termo,
+        'resultados': resultados,
+        'erro': erro,
+        'configurado': spotify_service.configurado(),
+    })
+
+
+def _album_da_importacao(dados):
+    """Reaproveita o álbum (pelo ID do Spotify ou título+artista) ou cria um novo."""
+    if dados.album_spotify_id:
+        album = Album.objects.filter(spotify_id=dados.album_spotify_id).first()
+        if album:
+            return album
+    album = Album.objects.filter(
+        titulo__iexact=dados.album_titulo, artista__iexact=dados.artista
+    ).first()
+    if album:
+        # Completa dados que faltavam no álbum cadastrado manualmente.
+        if not album.capa_url and dados.capa_url:
+            album.capa_url = dados.capa_url
+        if not album.spotify_id and dados.album_spotify_id:
+            album.spotify_id = dados.album_spotify_id
+        album.save()
+        return album
+    return Album.objects.create(
+        titulo=dados.album_titulo[:200],
+        artista=dados.artista[:200],
+        ano_lancamento=dados.album_ano,
+        capa_url=dados.capa_url,
+        spotify_id=dados.album_spotify_id,
+    )
 
 
 # --- Avaliações (uma por usuário e faixa) -------------------------------------

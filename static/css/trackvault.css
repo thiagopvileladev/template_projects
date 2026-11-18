@@ -142,7 +142,33 @@ main {
 .tv-filtros-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0 1rem; }
 .tv-filtro-largo { grid-column: 1 / -1; }
 
+/* Importação do Spotify */
+.tv-busca-spotify { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem 0; }
+.tv-busca-spotify input {
+    flex: 1 1 220px;
+    padding: .6rem 1rem;
+    border: 1px solid #333;
+    border-radius: 999px;
+    background: var(--tv-bg);
+    color: var(--tv-text);
+    font: inherit;
+}
+.tv-resultados { list-style: none; padding: 0; margin: 0 0 1rem; }
+.tv-resultados li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .75rem 0;
+    border-bottom: 1px solid #2a2a2a;
+}
+.tv-resultados img { width: 56px; height: 56px; object-fit: cover; border-radius: 4px; }
+.tv-resultado-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.tv-resultado-info strong, .tv-resultado-info span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
 /* Mensagens */
+.tv-alert-warning { border-left-color: #f5a623; }
+.tv-alert-info { border-left-color: var(--tv-muted); }
 .tv-alert {
     padding: .75rem 1rem;
     border-radius: 4px;

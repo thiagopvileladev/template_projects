@@ -14,6 +14,7 @@ urlpatterns = [
     # Faixas
     path('faixas/', views.FaixaListView.as_view(), name='faixa_lista'),
     path('faixas/nova/', views.FaixaCreateView.as_view(), name='faixa_nova'),
+    path('faixas/importar/', views.importar_spotify, name='importar_spotify'),
     path('faixas/<int:pk>/', views.FaixaDetailView.as_view(), name='faixa_detalhe'),
     path('faixas/<int:pk>/editar/', views.FaixaUpdateView.as_view(), name='faixa_editar'),
     path('faixas/<int:pk>/excluir/', views.FaixaDeleteView.as_view(), name='faixa_excluir'),

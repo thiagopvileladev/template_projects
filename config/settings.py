@@ -133,6 +133,13 @@ if 'test' in sys.argv:
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+# --- Spotify Web API (docs/api/documento_api.md, seção 2) ---------------------
+
+SPOTIFY_CLIENT_ID = config('SPOTIFY_CLIENT_ID', default='')
+SPOTIFY_CLIENT_SECRET = config('SPOTIFY_CLIENT_SECRET', default='')
+SPOTIFY_TIMEOUT = 5  # segundos, conforme o plano de integração
+
+
 # --- Segurança em produção (PDF, seção 7.2) -----------------------------------
 # Só ativadas com DEBUG=False, para não atrapalhar o desenvolvimento local.
 

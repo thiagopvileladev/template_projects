@@ -9,7 +9,8 @@ A especificação do trabalho (seção 7) permite alterações de escopo ou arqu
 | 3 | Entidade FAIXA sem `genero`, `bpm` e `popularidade` | Campos adicionados à tabela `acervo_faixa` | Esses campos já eram usados no contrato da API, nos protótipos e no UC05 (relatórios), mas faltavam no DER. |
 | 4 | Relacionamento N:N FAIXA–COLECAO sem tabela associativa | Tabela `acervo_colecao_faixas` criada pelo `ManyToManyField` | Implementação padrão do Django para relacionamentos N:N. |
 | 5 | Faixa sem identificador do Spotify | Campo `spotify_id` (único) em FAIXA | Evita importar a mesma faixa duas vezes. |
-| 6 | Rota `/api/v1/tracks/` no UC06 e `/api/v1/faixas/` no contrato da API | `/api/v1/faixas/` | Padronização com o contrato da API. |
+| 6 | Botão "Importar do Spotify" preenchendo o formulário via AJAX/Fetch (protótipo, Tela 2) | Página `/faixas/importar/` com busca e resultados renderizados pelo servidor; ao escolher, o formulário de nova faixa abre preenchido | Mantém todo o consumo da API externa no backend (credenciais nunca chegam ao navegador), funciona sem JavaScript e permite exibir a capa e o álbum para o curador escolher o resultado certo. |
+| 7 | Rota `/api/v1/tracks/` no UC06 e `/api/v1/faixas/` no contrato da API | `/api/v1/faixas/` | Padronização com o contrato da API. |
 
 ## Modelo de dados implementado
 

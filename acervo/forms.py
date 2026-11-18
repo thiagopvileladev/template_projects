@@ -12,7 +12,9 @@ class AlbumForm(forms.ModelForm):
 class FaixaForm(forms.ModelForm):
     class Meta:
         model = Faixa
-        fields = ('album', 'titulo', 'genero', 'bpm', 'duracao_ms', 'isrc', 'popularidade')
+        fields = ('album', 'titulo', 'genero', 'bpm', 'duracao_ms', 'isrc', 'popularidade', 'spotify_id')
+        # Preenchido pela importação do Spotify; não é digitado pelo curador.
+        widgets = {'spotify_id': forms.HiddenInput}
         help_texts = {
             'bpm': 'Andamento em batidas por minuto (20 a 300).',
             'duracao_ms': 'Duração em milissegundos (ex.: 3:30 = 210000).',
@@ -23,6 +25,12 @@ class FaixaForm(forms.ModelForm):
         # ISRC vazio vira NULL: o campo é único e vários "" dariam conflito.
         isrc = (self.cleaned_data.get('isrc') or '').strip().upper()
         return isrc or None
+
+    def clean_spotify_id(self):
+        spotify_id = (self.cleaned_data.get('spotify_id') or '').strip()
+        if spotify_id and not spotify_id.isalnum():
+            raise forms.ValidationError('Identificador do Spotify inválido.')
+        return spotify_id or None
 
 
 class AvaliacaoForm(forms.ModelForm):

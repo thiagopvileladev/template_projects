@@ -5,6 +5,16 @@
 {% block content %}
 <section class="tv-card tv-medium">
     <h1>{{ titulo_pagina }}</h1>
+    {% if importado_spotify %}
+        <div class="tv-alert" role="status">
+            Dados importados do Spotify. Confira as informações, escolha o <strong>gênero</strong>,
+            informe o <strong>BPM</strong> e salve.
+        </div>
+    {% elif spotify_url %}
+        <p class="tv-muted">
+            Não quer digitar tudo? <a href="{{ spotify_url }}">Importar do Spotify</a>.
+        </p>
+    {% endif %}
     <form method="post" novalidate>
         {% csrf_token %}
         {% include 'partials/form.html' %}
