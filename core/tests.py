@@ -1,8 +1,29 @@
+from io import StringIO
+from unittest import mock
+
+from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import Usuario
 from acervo.models import Album, Avaliacao, Faixa
+
+
+class PopularDemoTests(TestCase):
+    @mock.patch.dict('os.environ', {'DEMO_PASSWORD': 'SenhaDemo!2026'})
+    def test_cria_dados_e_e_idempotente(self):
+        call_command('popular_demo', stdout=StringIO())
+        call_command('popular_demo', stdout=StringIO())  # rodar de novo não duplica
+        self.assertEqual(Usuario.objects.count(), 2)
+        self.assertEqual(Faixa.objects.count(), 11)
+        self.assertEqual(Avaliacao.objects.count(), 9)
+        self.assertTrue(self.client.login(username='curador.demo@trackvault.app', password='SenhaDemo!2026'))
+
+    @mock.patch.dict('os.environ', {}, clear=True)
+    def test_sem_variavel_gera_senha_aleatoria(self):
+        saida = StringIO()
+        call_command('popular_demo', stdout=saida)
+        self.assertIn('Senha gerada', saida.getvalue())
 
 
 class HomeTests(TestCase):
