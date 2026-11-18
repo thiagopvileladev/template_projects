@@ -1,0 +1,38 @@
+# Blueprint do Render: descreve o serviço web do TrackVault.
+# Valores com "sync: false" são segredos: o Render pede para preenchê-los
+# no painel na primeira vez e eles NUNCA ficam neste arquivo.
+services:
+  - type: web
+    name: trackvault
+    runtime: python
+    plan: free
+    # Mesma região do banco no Supabase (us-east-1) para reduzir latência.
+    region: virginia
+    buildCommand: bash build.sh
+    startCommand: gunicorn config.wsgi:application --workers 2 --timeout 60
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13"
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_SSL_REQUIRE
+        value: "True"
+      - key: SPOTIFY_CLIENT_ID
+        sync: false
+      - key: SPOTIFY_CLIENT_SECRET
+        sync: false
+      - key: DEMO_PASSWORD
+        sync: false
+      - key: POPULAR_DEMO
+        value: "true"
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false

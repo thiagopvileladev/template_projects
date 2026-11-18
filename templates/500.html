@@ -1,0 +1,19 @@
+{% load static %}<!DOCTYPE html>
+{# Página independente: em erro 500 o Django não fornece contexto (usuário, request). #}
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Erro interno · TrackVault</title>
+    <link rel="icon" href="{% static 'img/logo.svg' %}" type="image/svg+xml">
+    <link rel="stylesheet" href="{% static 'css/trackvault.css' %}">
+</head>
+<body>
+    <main class="tv-card tv-medium" style="margin-top: 15vh; text-align: center;">
+        <img src="{% static 'img/logo.svg' %}" alt="TrackVault" width="56" height="56">
+        <h1>Algo deu errado</h1>
+        <p class="tv-muted">Ocorreu um erro inesperado. Tente novamente em instantes.</p>
+        <p><a href="/" class="tv-btn tv-btn-auto">Voltar ao início</a></p>
+    </main>
+</body>
+</html>

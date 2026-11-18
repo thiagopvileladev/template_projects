@@ -1,0 +1,3 @@
+# Scripts de shell sempre com quebra de linha Unix (LF):
+# com CRLF (padrão do Windows) o bash do Render falha ao executar o build.sh.
+*.sh text eol=lf

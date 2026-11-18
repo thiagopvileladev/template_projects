@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Página não encontrada · TrackVault{% endblock %}
+
+{% block content %}
+<section class="tv-card tv-medium text-center">
+    <p class="tv-kpi-valor">404</p>
+    <h1>Esta faixa não está no acervo</h1>
+    <p class="tv-muted">A página que você procura não existe, foi removida ou é privada.</p>
+    <div class="tv-actions justify-content-center">
+        <a href="{% url 'core:home' %}" class="tv-btn tv-btn-auto">Voltar ao início</a>
+        <a href="{% url 'acervo:faixa_lista' %}" class="tv-btn tv-btn-secondary tv-btn-auto">Buscar faixas</a>
+    </div>
+</section>
+{% endblock %}
