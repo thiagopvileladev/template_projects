@@ -1,0 +1,85 @@
+# Plano de varredura DAST — OWASP ZAP Automation Framework (ZAP 2.17.0)
+#
+# Alvo AUTORIZADO: somente a aplicação do próprio grupo (especificação, seção 7.5).
+# Nenhum outro domínio é incluído nos contextos; o ZAP não ataca Spotify,
+# Supabase, Google Fonts, Cloudflare ou qualquer site de terceiros.
+#
+# Execução (Windows):
+#   & "C:\Program Files\ZAP\Zed Attack Proxy\zap.bat" -cmd -port 8095 `
+#     -dir "<pasta temporária>" -autorun "<caminho>\zap-plano.yaml"
+# Variável de ambiente obrigatória: RELATORIO_DIR (pasta de saída dos relatórios).
+
+env:
+  contexts:
+    # Contexto completo: spider e varredura passiva (somente leitura).
+    - name: trackvault-completo
+      urls:
+        - https://trackvault-3hpa.onrender.com
+      includePaths:
+        - "https://trackvault-3hpa\\.onrender\\.com.*"
+    # Contexto da varredura ATIVA: exclui rotas que alterariam dados de
+    # produção sem autenticação (cadastro de contas) ou encerrariam sessões.
+    - name: trackvault-ativo
+      urls:
+        - https://trackvault-3hpa.onrender.com
+      includePaths:
+        - "https://trackvault-3hpa\\.onrender\\.com.*"
+      excludePaths:
+        - "https://trackvault-3hpa\\.onrender\\.com/contas/cadastro/.*"
+        - "https://trackvault-3hpa\\.onrender\\.com/contas/sair/.*"
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  # 1. Importa a definição OpenAPI para conhecer todos os endpoints da API.
+  - type: openapi
+    parameters:
+      apiUrl: https://trackvault-3hpa.onrender.com/api/v1/schema/
+      targetUrl: https://trackvault-3hpa.onrender.com
+      context: trackvault-completo
+
+  # 2. Descobre as páginas navegando pelos links.
+  - type: spider
+    parameters:
+      context: trackvault-completo
+      maxDuration: 5
+      maxDepth: 6
+      maxChildren: 30
+
+  # 3. Aguarda a análise passiva (cabeçalhos, cookies, vazamento de informação).
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 10
+
+  # 4. Ataques ativos com ritmo controlado (plano Free do Render: 0,1 CPU).
+  - type: activeScan
+    parameters:
+      context: trackvault-ativo
+      threadPerHost: 2
+      delayInMs: 150
+      maxRuleDurationInMins: 3
+      maxScanDurationInMins: 40
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+
+  # 5. Relatórios brutos.
+  - type: report
+    parameters:
+      template: traditional-html
+      reportDir: ${RELATORIO_DIR}
+      reportFile: zap-relatorio
+      reportTitle: TrackVault - DAST (OWASP ZAP)
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: ${RELATORIO_DIR}
+      reportFile: zap-relatorio
+  - type: report
+    parameters:
+      template: traditional-md
+      reportDir: ${RELATORIO_DIR}
+      reportFile: zap-relatorio
