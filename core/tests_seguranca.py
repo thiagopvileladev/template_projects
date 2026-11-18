@@ -99,3 +99,20 @@ class InjecaoSqlTests(TestCase):
             self.assertEqual(resposta.status_code, 200, payload)
             self.assertContains(resposta, 'Nenhuma faixa corresponde aos filtros informados.')
         self.assertTrue(Album.objects.exists())  # nada foi apagado
+
+    def test_paginacao_da_api_nao_avalia_expressoes(self):
+        """
+        Falso positivo da varredura final (ZAP 40018 em page/page_size): os
+        parâmetros são convertidos para inteiro pelo DRF; expressões e aspas
+        nunca são calculadas nem chegam ao SQL.
+        """
+        album = Album.objects.create(titulo='A', artista='B')
+        for i in range(8):
+            Faixa.objects.create(album=album, titulo=f'F{i}', genero='rock')
+        # Se "7-2" fosse calculado viriam 5 itens; o DRF ignora e usa o padrão (20).
+        self.assertEqual(len(self.client.get('/api/v1/faixas/', {'page_size': '7-2'}).json()['results']), 8)
+        self.assertEqual(len(self.client.get('/api/v1/faixas/', {'page_size': '5'}).json()['results']), 5)
+        # Qualquer página inexistente recebe a mesma resposta 404.
+        for pagina in ('10', '12-2', "10' AND '1'='1' -- "):
+            resposta = self.client.get('/api/v1/faixas/', {'page': pagina})
+            self.assertEqual(resposta.status_code, 404, pagina)

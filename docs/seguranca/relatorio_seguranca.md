@@ -5,7 +5,7 @@ Síntese das análises de segurança exigidas na seção 7.5 da especificação:
 | Análise | Situação | Evidências |
 |---|---|---|
 | SAST | ✅ Concluída | [`sast/1-inicial/`](sast/1-inicial/), [`sast/2-final/`](sast/2-final/) |
-| DAST | ⏳ Análise inicial e correções concluídas; nova varredura pendente (seção 2.5) | [`dast/1-inicial/`](dast/1-inicial/), [`dast/zap-plano.yaml`](dast/zap-plano.yaml) |
+| DAST | ✅ Concluída | [`dast/zap-plano.yaml`](dast/zap-plano.yaml), [`dast/1-inicial/`](dast/1-inicial/), [`dast/2-final/`](dast/2-final/) |
 
 ---
 
@@ -191,4 +191,57 @@ Não há correlação entre o tamanho do ataque e o tempo de resposta. Além dis
 
 ### 2.5 Verificação: nova varredura após as correções
 
-⏳ **Pendente.** Após o deploy das correções, a varredura é repetida com o mesmo plano (`rodar_zap.ps1 -Rodada 2-final`) e os resultados são comparados aqui.
+Mesmo plano (`zap-plano.yaml`), mesma ferramenta e mesmo alvo. Relatórios brutos em [`dast/2-final/`](dast/2-final/).
+
+| Item | Varredura inicial | Varredura final |
+|---|---|---|
+| Data / duração | 18/11/2026 08:28, 40,5 min | 18/11/2026 09:30, 40,6 min |
+| Commit implantado | `f4e568d` | `100bb0f` (correções DAST) |
+| Executado por | Marcio Tavares | Marcio Tavares |
+| URLs da API (OpenAPI) / spider | 14 / 88 | 14 / **137** |
+
+A varredura final explorou mais páginas: com o Swagger servido pelo próprio site, o spider passou a seguir os links da documentação e testou combinações de parâmetros da API (paginação) que não apareceram na primeira rodada.
+
+#### Comparação por alerta
+
+| Alerta do ZAP | Inicial | Final | Situação |
+|---|---|---|---|
+| SQL Injection – SQLite (Time Based) | Alto ×2 | — | Falso positivo (DAST-01); não reapareceu |
+| Content Security Policy Header Not Set | Médio ×5 | — | **Corrigido** (DAST-02) |
+| Sub Resource Integrity Attribute Missing | Médio ×5 | — | **Corrigido** (DAST-04) |
+| Cross-Domain Misconfiguration | Médio ×4 | — | **Corrigido** (DAST-03) |
+| Cross-Domain JavaScript Source File Inclusion | Baixo ×2 | — | **Corrigido** (DAST-06) |
+| Cookie No HttpOnly Flag | Baixo ×5 | — | **Corrigido** (DAST-05) |
+| SQL Injection (genérico) | — | Alto ×7 | Novo; **falso positivo** (DAST-07, abaixo) |
+| CSP: style-src unsafe-inline | — | Médio ×1 | Novo; **risco aceito** (DAST-08, abaixo) |
+| Timestamp Disclosure – Unix | — | Baixo ×5 | Novo; **falso positivo** (DAST-09, abaixo) |
+| Information Disclosure – Suspicious Comments | Info ×1 | Info ×3 | Falso positivo: comentários de licença no Bootstrap e no Swagger UI |
+| Demais informativos (10031, 10111, 10112, 10109, 10015) | Info | Info | Inalterados; ver seção 2.4 |
+
+| Risco (ZAP) | Inicial | Final |
+|---|---|---|
+| Alto | 1 | 1 (falso positivo) |
+| Médio | 3 | 1 (risco aceito) |
+| Baixo | 2 | 1 (falso positivo) |
+| Informativo | 6 | 6 |
+
+**Resultado:** os 5 achados confirmados na varredura inicial foram corrigidos e não reapareceram. Os 3 alertas novos foram analisados: 2 são falsos positivos comprovados e 1 é o risco aceito já documentado.
+
+#### Triagem dos alertas novos
+
+| ID | Alerta (plugin) | Veredito | Análise |
+|---|---|---|---|
+| DAST-07 | SQL Injection (40018) nos parâmetros `page` e `page_size` de `/api/v1/avaliacoes/` e `/api/v1/colecoes/` | **Falso positivo** | O ZAP considerou que `page=12-2` "reproduziu" o resultado de `page=10`. Reprodução em produção: qualquer página inexistente (`10`, `999`, `abc`, `12-2`, `10' AND '1'='1' --`) devolve a **mesma** resposta `404 {"detail": "Página inválida."}`. Em `page_size`, prova direta: `page_size=5` → 5 itens; `page_size=7-2` → **12 itens** (o padrão), e não 5, porque o DRF converte o valor para inteiro e ignora o que não é número. Os parâmetros nunca chegam ao SQL como texto. Teste de regressão: `core/tests_seguranca.py::InjecaoSqlTests::test_paginacao_da_api_nao_avalia_expressoes`. |
+| DAST-08 | CSP: style-src unsafe-inline (10055) em `/api/v1/docs/` | **Risco aceito** | Exceção deliberada, descrita em "Riscos aceitos" (seção 2.4): só a página do Swagger aceita CSS inline, que o Swagger UI exige; `script-src` continua `'self'`. As demais páginas usam `style-src 'self'`. |
+| DAST-09 | Timestamp Disclosure – Unix (10096) em `swagger-ui-standalone-preset.js` | **Falso positivo** | Os "timestamps" são constantes de algoritmos de hash dentro da biblioteca minificada (ex.: `1732584193` = `0x67452301`, valor inicial do MD5/SHA-1; `1518500249` = `0x5A827999`, constante do SHA-1). Não são datas nem informação do TrackVault. |
+
+#### Conclusão do DAST
+
+| Situação | Quantidade |
+|---|---|
+| Achados confirmados e corrigidos | 5 (DAST-02 a DAST-06) |
+| Falsos positivos comprovados | 3 (DAST-01, DAST-07, DAST-09) + comentários de bibliotecas |
+| Riscos aceitos | 1 (DAST-08), mais os listados na seção 2.4 |
+| Achados confirmados em aberto | **0** |
+
+A Cloudflare na frente do Render bloqueou parte dos ataques (ex.: `pg_sleep`, HTTP 403), mas nenhum achado foi descartado por esse motivo: os falsos positivos foram comprovados contra a própria aplicação e cobertos por testes automatizados que rodam sem a Cloudflare.

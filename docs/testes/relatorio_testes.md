@@ -23,12 +23,12 @@ Os testes usam um banco temporário criado e destruído a cada execução e **n�
 
 ### Resultado
 
-Execução de 17/11/2026 — Python 3.14.0, Django 5.2.19.
+Execução de 18/11/2026 (versão final) — Python 3.14.0, Django 5.2.19.
 
 | Indicador | Valor |
 |---|---|
-| Testes executados | **95** |
-| Aprovados | **95** |
+| Testes executados | **119** |
+| Aprovados | **119** |
 | Falhas / erros | 0 |
 | Cobertura de código (linhas + ramificações) | **94%** |
 
@@ -36,24 +36,24 @@ Execução de 17/11/2026 — Python 3.14.0, Django 5.2.19.
 
 | Caso de uso / requisito | Arquivo de teste | Testes | O que é verificado |
 |---|---|---|---|
-| UC01 — Autenticar-se | `accounts/tests.py` | 6 | Cadastro, e-mail duplicado (sem diferenciar maiúsculas), senha fraca, login por e-mail, mensagem genérica em credencial inválida, logout somente via POST |
+| UC01 — Autenticar-se | `accounts/tests.py` | 8 | Cadastro, e-mail duplicado (sem diferenciar maiúsculas), senha fraca, login por e-mail, mensagem genérica em credencial inválida, logout somente via POST, bloqueio após 5 tentativas erradas (SAST-01) |
 | UC02 — Gerenciar acervo | `acervo/tests.py` | 20 | CRUD de álbuns, faixas, avaliações e coleções; validações (ano futuro, BPM, ISRC, nota 0–10); exclusão em cascata; login obrigatório; usuário não altera dados de outro (404); coleção privada invisível |
-| UC03 — Importar do Spotify | `acervo/tests_spotify.py` | 19 | Conversão do JSON, timeout de 5 s, cache do token, renovação após 401, falha de conexão, HTTP 429, JSON inválido, campos ausentes, credenciais ausentes, fluxo completo de importação e fallback manual |
+| UC03 — Importar do Spotify | `acervo/tests_spotify.py` | 25 | Conversão do JSON, timeout de 5 s, cache do token, renovação após 401, falha de conexão, HTTP 429, JSON inválido, campos ausentes, credenciais ausentes, fluxo completo de importação, fallback manual e comando `buscar_capas` (correspondência de título e artista, simulação, Spotify fora do ar) |
 | UC04 — Buscar músicas | `acervo/tests.py` (`BuscaTests`) | 11 | Busca livre, filtros combinados, nota mínima, faixa de BPM, coleção, ordenação, nenhum resultado, filtros inválidos validados no servidor, paginação preservando filtros |
-| UC05 — Relatório | `acervo/tests_relatorio.py` | 12 | Cada indicador conferido com valores calculados à mão, escopo "minhas avaliações", filtros, intervalo inválido, exportação CSV e proteção contra CSV injection |
-| UC06 — API REST | `api/tests.py` | 22 | Códigos 200, 201, 204, 400, 401, 403, 404, 405 e 429; paginação; filtros; Bearer token; e-mails não expostos; Swagger/OpenAPI no ar |
+| UC05 — Relatório | `acervo/tests_relatorio.py` | 13 | Cada indicador conferido com valores calculados à mão, escopo "minhas avaliações", filtros, intervalo inválido, exportação CSV e proteção contra CSV injection (SAST-03) |
+| UC06 — API REST | `api/tests.py` | 26 | Códigos 200, 201, 204, 400, 401, 403, 404, 405 e 429; paginação; filtros; Bearer token; e-mails não expostos; Swagger/OpenAPI no ar; limites resistentes a `X-Forwarded-For` forjado e a proxies rotativos (SAST-02) |
 | Página inicial e dados de demonstração | `core/tests.py` | 5 | Indicadores e cards da home, menu conforme login, comando `popular_demo` idempotente |
+| Segurança (regressão do DAST) | `core/tests_seguranca.py` | 11 | CSP restritiva, `Permissions-Policy`, cookie CSRF HttpOnly, estáticos sem CORS aberto, nenhuma página com JS/CSS inline, nenhum recurso de CDN externo, payloads de SQL injection na busca e na paginação da API |
 
 ### Cobertura por módulo (principais)
 
 | Módulo | Cobertura |
 |---|---|
-| `accounts/forms.py`, `api/serializers.py`, `core/views.py` | 100% |
-| `acervo/management/commands/popular_demo.py` | 98% |
-| `acervo/busca.py`, `acervo/relatorios.py` | 97% |
-| `api/views.py` | 95% |
-| `acervo/views.py` | 93% |
-| `acervo/services/spotify_service.py` | 87% |
+| `accounts/forms.py`, `api/serializers.py`, `core/views.py`, `acervo/management/commands/buscar_capas.py` | 100% |
+| `acervo/busca.py`, `acervo/relatorios.py`, `core/middleware.py` | 97% |
+| `acervo/views.py`, `api/views.py` | 95% |
+| `accounts/protecao.py` | 90% |
+| `acervo/services/spotify_service.py` | 86% |
 | **Total** | **94%** |
 
 As linhas não cobertas são, em sua maioria, as configurações de produção de `config/settings.py` (ativadas apenas com `DEBUG=False`, verificadas no deploy) e ramos defensivos raros do serviço do Spotify (por exemplo, HTTP 404 e erros genéricos 5xx).
