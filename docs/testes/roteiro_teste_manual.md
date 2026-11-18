@@ -54,55 +54,52 @@ Complementa os testes automatizados ([`relatorio_testes.md`](relatorio_testes.md
 
 | ID | Passos | Resultado esperado | Resultado | Observações |
 |---|---|---|---|---|
-| CT17 | **Nova faixa → Importar do Spotify**, pesquisar "Feel So Close" | Até 5 resultados com capa, artista, álbum e duração | | |
-| CT18 | Clicar em **Importar** em um resultado | Formulário de nova faixa abre preenchido (título, álbum, duração, ISRC) com aviso para completar gênero e BPM | | |
-| CT19 | Escolher gênero, informar BPM e salvar | Faixa salva; capa do álbum aparece no detalhe e na página inicial | | |
-| CT20 | Importar de novo a mesma faixa | Mensagem "Esta faixa já está no acervo." e redirecionamento para ela | | |
-| CT21 | Remover `SPOTIFY_CLIENT_ID` do `.env`, reiniciar e pesquisar | Mensagem de integração não configurada e link "Cadastrar manualmente" | | |
-| CT22 | Desconectar a internet e pesquisar | Mensagem "temporariamente indisponível"; a página não trava (no máximo ~5 s) | | |
+| CT17 | **Nova faixa → Importar do Spotify**, pesquisar "Feel So Close" | Até 5 resultados com capa, artista, álbum e duração |✅ | |
+| CT18 | Clicar em **Importar** em um resultado | Formulário de nova faixa abre preenchido (título, álbum, duração, ISRC) com aviso para completar gênero e BPM |✅ | |
+| CT19 | Escolher gênero, informar BPM e salvar | Faixa salva; capa do álbum aparece no detalhe e na página inicial |✅ | |
+| CT20 | Importar de novo a mesma faixa | Mensagem "Esta faixa já está no acervo." e redirecionamento para ela |✅ | |
+| CT21 | Remover `SPOTIFY_CLIENT_ID` do `.env`, reiniciar e pesquisar | Mensagem de integração não configurada e link "Cadastrar manualmente" |✅ | |
+| CT22 | Desconectar a internet e pesquisar | Mensagem "temporariamente indisponível"; a página não trava (no máximo ~5 s) |✅ | |
 
 ### UC04 — Buscar músicas
 
 | ID | Passos | Resultado esperado | Resultado | Observações |
 |---|---|---|---|---|
-| CT23 | Deslogado, digitar "daft" na busca do topo | Faixas do Daft Punk listadas | | |
-| CT24 | Em **Faixas**, filtrar gênero Eletrônica e nota mínima 9 | Apenas faixas eletrônicas com média ≥ 9 | | |
-| CT25 | Filtrar BPM mínimo 200 e máximo 100 | Erro "O BPM mínimo não pode ser maior que o máximo." | | |
-| CT26 | Buscar "xyz123" | Mensagem "Nenhuma faixa corresponde aos filtros informados." | | |
-| CT27 | Ordenar por "Maior nota" | Faixas em ordem decrescente de média | | |
+| CT23 | Deslogado, digitar "daft" na busca do topo | Faixas do Daft Punk listadas |✅ | |
+| CT24 | Em **Faixas**, filtrar gênero Eletrônica e nota mínima 9 | Apenas faixas eletrônicas com média ≥ 9 |✅ | |
+| CT25 | Filtrar BPM mínimo 200 e máximo 100 | Erro "O BPM mínimo não pode ser maior que o máximo." |✅ | |
+| CT26 | Buscar "xyz123" | Mensagem "Nenhuma faixa corresponde aos filtros informados." |✅ | |
+| CT27 | Ordenar por "Maior nota" | Faixas em ordem decrescente de média |✅ | |
 
 ### UC05 — Relatório
 
 | ID | Passos | Resultado esperado | Resultado | Observações |
 |---|---|---|---|---|
-| CT28 | Logado, abrir **Relatórios** | Indicadores, gráfico por gênero, ranking e tabela | | |
-| CT29 | Conferir um indicador à mão (ex.: total de faixas) | Valor igual ao contado na lista de faixas | | |
-| CT30 | Escopo "Somente faixas que avaliei" | Apenas faixas avaliadas pela conta logada | | |
-| CT31 | **Imprimir / Salvar PDF** e salvar como PDF | PDF em fundo branco, sem menus, com data e autor | | |
-| CT32 | **Exportar CSV** e abrir no Excel/Planilhas | Colunas separadas e acentos corretos | | |
+| CT28 | Logado, abrir **Relatórios** | Indicadores, gráfico por gênero, ranking e tabela |✅ | |
+| CT29 | Conferir um indicador à mão (ex.: total de faixas) | Valor igual ao contado na lista de faixas |✅ | |
+| CT30 | Escopo "Somente faixas que avaliei" | Apenas faixas avaliadas pela conta logada |✅ | |
+| CT31 | **Imprimir / Salvar PDF** e salvar como PDF | PDF em fundo branco, sem menus, com data e autor |✅ | |
+| CT32 | **Exportar CSV** e abrir no Excel/Planilhas | Colunas separadas e acentos corretos |✅ | |
 
 ### UC06 — API REST
 
 | ID | Passos | Resultado esperado | Resultado | Observações |
 |---|---|---|---|---|
-| CT33 | Abrir `/api/v1/docs/` | Swagger lista todos os endpoints | | |
-| CT34 | No Swagger, `POST /auth/token/` com a conta de teste; **Authorize** com o token; `POST /avaliacoes/` | 200 no token e 201 na avaliação | | |
-| CT35 | Executar a coleção Postman inteira no Collection Runner | Todas as asserções aprovadas | | |
+| CT33 | Abrir `/api/v1/docs/` | Swagger lista todos os endpoints |✅ | |
+| CT34 | No Swagger, `POST /auth/token/` com a conta de teste; **Authorize** com o token; `POST /avaliacoes/` | 200 no token e 201 na avaliação |✅ | |
+| CT35 | Executar a coleção Postman inteira no Collection Runner | Todas as asserções aprovadas |✅ | |
 
 ### Interface, identidade visual e responsividade
 
 | ID | Passos | Resultado esperado | Resultado | Observações |
 |---|---|---|---|---|
-| CT36 | Percorrer todas as telas no desktop | Paleta escura, verde nos botões, logotipo e fontes Montserrat/Inter em todas | | |
-| CT37 | Repetir em 375 px de largura | Menu vira hambúrguer; nada sai da tela na horizontal; tabelas rolam dentro do cartão | | |
-| CT38 | Navegar só com o teclado (Tab) | Foco visível; "Pular para o conteúdo" aparece no primeiro Tab | | |
+| CT36 | Percorrer todas as telas no desktop | Paleta escura, verde nos botões, logotipo e fontes Montserrat/Inter em todas |✅ | |
+| CT37 | Repetir em 375 px de largura | Menu vira hambúrguer; nada sai da tela na horizontal; tabelas rolam dentro do cartão |✅ | |
+| CT38 | Navegar só com o teclado (Tab) | Foco visível; "Pular para o conteúdo" aparece no primeiro Tab |✅ | |
 
 ## Resumo da execução
 
 | Total | ✅ | ⚠️ | ❌ |
 |---|---|---|---|
-| 38 | | | |
+| 38 |38 |0 |0 |
 
-**Problemas encontrados e correções:**
-
--
