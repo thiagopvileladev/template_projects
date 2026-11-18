@@ -201,8 +201,6 @@ REST_FRAMEWORK = {
 # Cabeçalho confiável com o IP real do cliente (formato request.META).
 # Render (atrás do Cloudflare): HTTP_CF_CONNECTING_IP. Local: vazio.
 CLIENT_IP_HEADER = config('CLIENT_IP_HEADER', default='')
-# Temporário: registra nos logs os cabeçalhos de IP recebidos em /api/v1/auth/.
-DIAGNOSTICO_IP = config('DIAGNOSTICO_IP', default=False, cast=bool)
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'TrackVault API',

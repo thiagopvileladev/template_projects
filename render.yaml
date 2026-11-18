@@ -24,9 +24,6 @@ services:
         value: "0"
       - key: CLIENT_IP_HEADER
         value: HTTP_CF_CONNECTING_IP
-      # Temporário: confirmar os cabeçalhos em produção; depois remover.
-      - key: DIAGNOSTICO_IP
-        value: "True"
       - key: DATABASE_URL
         sync: false
       - key: DATABASE_SSL_REQUIRE
