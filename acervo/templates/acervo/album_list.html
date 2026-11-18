@@ -3,10 +3,14 @@
 {% block title %}Álbuns · TrackVault{% endblock %}
 
 {% block content %}
-<div class="tv-topo">
-    <h1>Álbuns</h1>
+<header class="tv-pagina-topo">
+    <div>
+        <span class="tv-rotulo">Acervo</span>
+        <h1>Álbuns</h1>
+        {% if album_list %}<p>{{ paginator.count }} álbu{{ paginator.count|pluralize:'m,ns' }} no acervo.</p>{% endif %}
+    </div>
     {% if user.is_authenticated %}<a href="{% url 'acervo:album_novo' %}" class="tv-btn tv-btn-auto">+ Novo álbum</a>{% endif %}
-</div>
+</header>
 
 {% if album_list %}
 <div class="tv-grid">
@@ -18,13 +22,16 @@
             <div class="tv-capa-vazia" aria-hidden="true">♪</div>
         {% endif %}
         <strong>{{ album.titulo }}</strong>
-        <span class="tv-muted">{{ album.artista }}{% if album.ano_lancamento %} · {{ album.ano_lancamento }}{% endif %}</span>
+        <span class="tv-muted">{% if album.ano_lancamento %}{{ album.ano_lancamento }} · {% endif %}{{ album.artista }}</span>
         <small class="tv-muted">{{ album.total_faixas }} faixa{{ album.total_faixas|pluralize }}</small>
     </a>
     {% endfor %}
 </div>
 {% include 'partials/paginacao.html' %}
 {% else %}
-<p class="tv-muted">Nenhum álbum cadastrado ainda.</p>
+<div class="tv-vazio">
+    <div class="tv-vazio-icone" aria-hidden="true">♪</div>
+    <p>Nenhum álbum cadastrado ainda.</p>
+</div>
 {% endif %}
 {% endblock %}

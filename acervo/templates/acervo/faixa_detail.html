@@ -3,20 +3,26 @@
 {% block title %}{{ faixa.titulo }} · TrackVault{% endblock %}
 
 {% block content %}
-<section class="tv-card tv-detalhe">
-    {% if faixa.album.capa_url %}<img src="{{ faixa.album.capa_url }}" alt="Capa de {{ faixa.album.titulo }}" class="tv-capa">{% endif %}
-    <div>
+<section class="tv-cabecalho-midia">
+    {% if faixa.album.capa_url %}
+        <img src="{{ faixa.album.capa_url }}" alt="Capa de {{ faixa.album.titulo }}" class="tv-capa">
+    {% else %}
+        <div class="tv-capa-grande-vazia" aria-hidden="true">♪</div>
+    {% endif %}
+    <div class="tv-cabecalho-info">
+        <span class="tv-rotulo">Faixa</span>
         <h1>{{ faixa.titulo }}</h1>
-        <p class="tv-muted">
-            {{ faixa.album.artista }} ·
+        <div class="tv-meta">
+            <strong>{{ faixa.album.artista }}</strong>
             <a href="{% url 'acervo:album_detalhe' faixa.album_id %}">{{ faixa.album.titulo }}</a>
-        </p>
+            {% if faixa.album.ano_lancamento %}<span>{{ faixa.album.ano_lancamento }}</span>{% endif %}
+        </div>
         <dl class="tv-dados">
-            <dt>Gênero</dt><dd>{{ faixa.get_genero_display }}</dd>
+            <dt>Gênero</dt><dd><span class="tv-genero">{{ faixa.get_genero_display }}</span></dd>
             <dt>BPM</dt><dd>{{ faixa.bpm|default:'—' }}</dd>
             <dt>ISRC</dt><dd>{{ faixa.isrc|default:'—' }}</dd>
-            <dt>Popularidade</dt><dd>{{ faixa.popularidade|default:'—' }}</dd>
-            <dt>Média dos curadores</dt><dd>{{ media|floatformat:1|default:'—' }}</dd>
+            {% if faixa.popularidade is not None %}<dt>Popularidade</dt><dd>{{ faixa.popularidade }}</dd>{% endif %}
+            <dt>Média dos curadores</dt><dd>{% if media is not None %}<span class="tv-nota">{{ media|floatformat:1 }}</span>{% else %}—{% endif %}</dd>
         </dl>
         {% if user.is_authenticated %}
         <div class="tv-actions">
@@ -32,12 +38,13 @@
 {% for avaliacao in avaliacoes %}
 <article class="tv-card tv-avaliacao">
     <header>
+        <span class="tv-avatar-avaliacao" aria-hidden="true">{{ avaliacao.usuario.username|first|upper }}</span>
         <strong>{{ avaliacao.usuario.username }}</strong>
-        <span class="tv-nota">{{ avaliacao.nota_pessoal|floatformat:1 }}</span>
+        <span class="tv-nota" title="Nota do curador">{{ avaliacao.nota_pessoal|floatformat:1 }}</span>
         {% if avaliacao.nota_pitchfork is not None %}
             <span class="tv-nota tv-nota-pitchfork" title="Nota Pitchfork">P {{ avaliacao.nota_pitchfork|floatformat:1 }}</span>
         {% endif %}
-        <small class="tv-muted">{{ avaliacao.criado_em|date:'d/m/Y' }}</small>
+        <small class="tv-muted ms-auto">{{ avaliacao.criado_em|date:'d/m/Y' }}</small>
     </header>
     {% if avaliacao.resenha %}<p>{{ avaliacao.resenha|linebreaksbr }}</p>{% endif %}
     {% if avaliacao.usuario == user %}
@@ -48,6 +55,9 @@
     {% endif %}
 </article>
 {% empty %}
-<p class="tv-muted">Nenhuma avaliação ainda.</p>
+<div class="tv-vazio">
+    <p>Nenhuma avaliação ainda.</p>
+    {% if user.is_authenticated %}<a href="{% url 'acervo:faixa_avaliar' faixa.pk %}" class="tv-btn tv-btn-auto">Seja o primeiro a avaliar</a>{% endif %}
+</div>
 {% endfor %}
 {% endblock %}

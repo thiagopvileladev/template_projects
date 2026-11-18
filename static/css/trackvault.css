@@ -288,3 +288,212 @@ a:hover { text-decoration: underline; }
 .tv-w-100 { width: 100%; }
 
 .tv-erro-500 { margin-top: 15vh; text-align: center; }
+
+/* ==========================================================================
+   Visual 2.0 — refinamento no estilo de players de música
+   (sobrepõe os estilos acima; nenhum estilo inline: CSP, achado DAST-02)
+   ========================================================================== */
+
+:root,
+[data-bs-theme="dark"] {
+    --tv-surface: #181818;
+    --tv-surface-2: #242424;
+    --tv-surface-3: #2a2a2a;
+    --tv-borda: rgba(255, 255, 255, .07);
+    --tv-raio: 10px;
+    --tv-sombra: 0 8px 24px rgba(0, 0, 0, .45);
+}
+
+body {
+    background:
+        radial-gradient(1200px 420px at 50% -120px, rgba(29, 185, 84, .10), transparent 70%),
+        var(--tv-bg);
+    background-repeat: no-repeat;
+    -webkit-font-smoothing: antialiased;
+}
+main { min-height: 60vh; }
+
+h1 { letter-spacing: -.02em; }
+h2 { font-size: 1.25rem; }
+::selection { background: rgba(29, 185, 84, .35); }
+
+/* Navbar mais limpa */
+.tv-navbar { background: rgba(10, 10, 10, .85); }
+.tv-navbar .nav-link { font-size: .95rem; padding-left: .75rem !important; padding-right: .75rem !important; border-radius: 999px; }
+.tv-navbar .nav-link.active { box-shadow: none; background: var(--tv-surface-2); }
+
+/* Busca com ícone de lupa (SVG em data: — permitido pelo img-src da CSP) */
+.tv-busca-rapida .form-control,
+.tv-busca-spotify .form-control,
+.tv-input-busca {
+    padding-left: 2.6rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%23A7A7A7' stroke-width='2' stroke-linecap='round' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 1rem center;
+    background-size: 18px;
+}
+.tv-busca-rapida .form-control { background-color: var(--tv-surface-2); border-color: transparent; }
+.tv-busca-rapida .form-control:hover { background-color: var(--tv-surface-3); }
+
+/* Cartões e botões */
+.tv-card { border-radius: var(--tv-raio); border-color: var(--tv-borda); }
+.tv-btn, .tv-btn-primario { font-size: .95rem; letter-spacing: .01em; padding: .55rem 1.35rem; }
+.tv-btn:hover, .tv-btn-primario:hover { transform: scale(1.03); }
+.tv-btn-secondary { border-color: rgba(255, 255, 255, .3); }
+.tv-btn-sm { padding: .35rem .95rem; font-size: .85rem; }
+.form-control, .form-select { border-radius: 8px; border-color: #333; background-color: #121212; }
+
+/* Cabeçalho das páginas de listagem */
+.tv-pagina-topo { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.tv-pagina-topo h1 { margin: 0; font-size: clamp(1.8rem, 4.5vw, 2.6rem); font-weight: 800; }
+.tv-pagina-topo p { margin: .25rem 0 0; color: var(--tv-muted); }
+.tv-rotulo { display: block; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--tv-muted); }
+
+/* --- Lista de faixas (tracklist) ------------------------------------------------ */
+.tv-faixas-wrap { overflow-x: auto; }
+.tv-faixas { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .925rem; }
+.tv-faixas th {
+    padding: .5rem .75rem; color: var(--tv-muted); font-size: .75rem; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase; border-bottom: 1px solid var(--tv-borda); white-space: nowrap;
+}
+.tv-faixas td { padding: .45rem .75rem; vertical-align: middle; border: 0; }
+.tv-faixas tbody tr { transition: background .12s ease; }
+.tv-faixas tbody tr:hover { background: rgba(255, 255, 255, .06); }
+.tv-faixas tbody tr td:first-child { border-radius: 6px 0 0 6px; }
+.tv-faixas tbody tr td:last-child { border-radius: 0 6px 6px 0; }
+.tv-faixas tbody tr:first-child td { padding-top: .75rem; }
+.tv-col-num { width: 3rem; text-align: right; color: var(--tv-muted); font-variant-numeric: tabular-nums; }
+.tv-col-bpm, .tv-col-nota { width: 5.5rem; text-align: right; font-variant-numeric: tabular-nums; }
+.tv-col-album, .tv-col-genero { color: var(--tv-muted); }
+.tv-col-album a { color: var(--tv-muted); }
+.tv-col-album a:hover { color: var(--tv-text); }
+
+.tv-faixa-titulo { display: flex; align-items: center; gap: .85rem; min-width: 0; }
+.tv-faixa-titulo > div { display: flex; flex-direction: column; min-width: 0; }
+.tv-faixa-nome { color: var(--tv-text) !important; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tv-faixa-artista { color: var(--tv-muted); font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tv-faixas tbody tr:hover .tv-faixa-nome { color: var(--tv-green) !important; }
+
+.tv-mini-capa {
+    flex: 0 0 44px; width: 44px; height: 44px; border-radius: 4px; object-fit: cover;
+    background: var(--tv-surface-3); box-shadow: 0 4px 10px rgba(0, 0, 0, .35);
+}
+.tv-mini-capa-vazia { display: grid; place-items: center; color: var(--tv-muted); font-size: 1.1rem; }
+
+.tv-genero {
+    display: inline-block; padding: .15rem .6rem; border-radius: 999px;
+    background: var(--tv-surface-2); color: var(--tv-text); font-size: .78rem; white-space: nowrap;
+}
+.tv-sem-nota { color: var(--tv-muted); }
+
+@media (max-width: 767.98px) {
+    .tv-faixas .tv-col-album, .tv-faixas .tv-col-genero, .tv-faixas .tv-col-bpm { display: none; }
+    .tv-faixas td, .tv-faixas th { padding-left: .4rem; padding-right: .4rem; }
+    .tv-col-num { width: 2rem; }
+}
+
+/* --- Cabeçalho de mídia (álbum, faixa, coleção) --------------------------------- */
+.tv-cabecalho-midia {
+    display: flex; align-items: flex-end; gap: clamp(1rem, 3vw, 2rem); flex-wrap: wrap;
+    padding: clamp(1.25rem, 4vw, 2rem);
+    margin-bottom: 1.5rem; border-radius: 14px;
+    background: linear-gradient(180deg, rgba(29, 185, 84, .22) 0%, rgba(24, 24, 24, .9) 100%), var(--tv-surface);
+}
+.tv-cabecalho-midia .tv-capa,
+.tv-cabecalho-midia .tv-mosaico,
+.tv-cabecalho-midia .tv-capa-grande-vazia {
+    flex: 0 0 auto; width: clamp(150px, 26vw, 232px); height: auto; aspect-ratio: 1;
+    border-radius: 8px; box-shadow: 0 16px 40px rgba(0, 0, 0, .6);
+}
+.tv-capa-grande-vazia { display: grid; place-items: center; background: var(--tv-surface-3); font-size: 4rem; color: var(--tv-muted); }
+.tv-cabecalho-info { flex: 1 1 280px; min-width: 0; }
+.tv-cabecalho-info h1 {
+    font-size: clamp(2rem, 6vw, 4rem); font-weight: 800; line-height: 1.05;
+    margin: .35rem 0 .75rem; overflow-wrap: anywhere;
+}
+.tv-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .5rem; color: var(--tv-muted); font-size: .95rem; }
+.tv-meta strong { color: var(--tv-text); }
+.tv-meta > * + *::before { content: "•"; margin-right: .5rem; color: var(--tv-muted); }
+.tv-cabecalho-info .tv-actions { margin-top: 1.25rem; }
+
+/* Mosaico de capas (coleções) */
+.tv-mosaico { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; overflow: hidden; background: var(--tv-surface-3); }
+.tv-mosaico img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tv-mosaico-1 img { grid-column: 1 / -1; grid-row: 1 / -1; }
+.tv-mosaico-vazio { display: grid; place-items: center; font-size: 3rem; color: var(--tv-muted); }
+.tv-album .tv-mosaico { width: 100%; aspect-ratio: 1; border-radius: 8px; margin-bottom: .5rem; box-shadow: var(--tv-sombra); }
+
+/* Grade de cartões (álbuns, coleções, página inicial) */
+.tv-grid { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 1.1rem; }
+.tv-album { background: var(--tv-surface); border-color: transparent; padding: .85rem; }
+.tv-album:hover { background: var(--tv-surface-2); transform: none; }
+.tv-album strong { font-weight: 600; }
+.tv-album span, .tv-album small { font-size: .85rem; }
+
+/* Estado vazio */
+.tv-vazio { text-align: center; padding: 3rem 1rem; color: var(--tv-muted); }
+.tv-vazio-icone { font-size: 2.5rem; margin-bottom: .5rem; }
+.tv-vazio p { margin-bottom: 1rem; }
+
+/* Avaliações */
+.tv-avaliacao { background: var(--tv-surface); }
+.tv-avatar-avaliacao {
+    display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+    background: var(--tv-surface-3); color: var(--tv-text); font-weight: 700; font-size: .85rem;
+}
+
+/* Paginação em "pílulas" */
+.tv-paginacao a {
+    padding: .35rem .9rem; border-radius: 999px; background: var(--tv-surface-2);
+    color: var(--tv-text); text-decoration: none;
+}
+.tv-paginacao a:hover { background: var(--tv-surface-3); }
+
+/* Relatório: KPI com destaque */
+.tv-kpi { border-color: var(--tv-borda); }
+.tv-kpi-valor { font-weight: 800; }
+
+@media print {
+    .tv-cabecalho-midia { background: none; }
+    .tv-mini-capa { box-shadow: none; }
+}
+
+/* Ranking do relatório com capas */
+.tv-ranking { padding-left: 1.6rem; }
+.tv-ranking li { padding: .3rem .4rem; border-radius: 6px; }
+.tv-ranking li:hover { background: rgba(255, 255, 255, .05); }
+.tv-ranking .tv-faixa-titulo { gap: .75rem; }
+@media print {
+    .tv-ranking li:hover { background: none; }
+}
+
+/* Busca da lista de faixas: barra principal + filtros avançados recolhíveis */
+.tv-busca-faixas { margin-bottom: 1.75rem; }
+.tv-busca-linha { display: flex; gap: .5rem; flex-wrap: wrap; }
+.tv-busca-linha .form-control {
+    flex: 1 1 260px; border-radius: 999px; padding-top: .65rem; padding-bottom: .65rem;
+    background-color: var(--tv-surface-2); border-color: transparent;
+}
+.tv-busca-linha .form-control:focus { background-color: var(--tv-surface-3); }
+.tv-filtros-avancados { margin-top: .75rem; }
+.tv-filtros-avancados summary {
+    display: inline-flex; align-items: center; gap: .4rem; cursor: pointer; list-style: none;
+    color: var(--tv-muted); font-weight: 600; font-size: .9rem; user-select: none;
+}
+.tv-filtros-avancados summary::-webkit-details-marker { display: none; }
+.tv-filtros-avancados summary::before { content: "▸"; transition: transform .15s ease; }
+.tv-filtros-avancados[open] summary::before { transform: rotate(90deg); }
+.tv-filtros-avancados summary:hover { color: var(--tv-text); }
+
+/* Títulos longos com reticências em qualquer largura de tela */
+.tv-faixas { table-layout: fixed; }
+.tv-faixas .tv-col-album { width: 26%; }
+.tv-faixas .tv-col-genero { width: 9.5rem; }
+.tv-faixas td { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tv-col-album a { display: block; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 767.98px) {
+    .tv-col-bpm, .tv-col-nota { width: 4rem; }
+}
+
+/* Cards: nomes longos em uma linha, com reticências (cards alinhados) */
+.tv-album > span, .tv-album > small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

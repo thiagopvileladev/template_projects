@@ -1,42 +1,63 @@
 {% extends 'base.html' %}
+{% load tv %}
 
 {% block title %}Faixas · TrackVault{% endblock %}
 
 {% block content %}
-<div class="tv-topo">
-    <h1>Faixas</h1>
-    {% if user.is_authenticated %}<a href="{% url 'acervo:faixa_nova' %}" class="tv-btn tv-btn-auto">+ Nova faixa</a>{% endif %}
-</div>
-
-<form method="get" class="tv-card tv-filtros" role="search">
-    {% include 'partials/filtros.html' %}
-    <div class="tv-actions">
-        <button type="submit" class="tv-btn tv-btn-auto">Buscar</button>
-        {% if request.GET %}<a href="{% url 'acervo:faixa_lista' %}" class="tv-btn tv-btn-secondary tv-btn-auto">Limpar filtros</a>{% endif %}
+<header class="tv-pagina-topo">
+    <div>
+        <span class="tv-rotulo">Acervo</span>
+        <h1>Faixas</h1>
+        {% if faixa_list %}<p>{{ paginator.count }} faixa{{ paginator.count|pluralize }} encontrada{{ paginator.count|pluralize }}.</p>{% endif %}
     </div>
+    {% if user.is_authenticated %}
+    <div class="tv-actions mt-0">
+        <a href="{% url 'acervo:importar_spotify' %}" class="tv-btn tv-btn-secondary tv-btn-auto">Importar do Spotify</a>
+        <a href="{% url 'acervo:faixa_nova' %}" class="tv-btn tv-btn-auto">+ Nova faixa</a>
+    </div>
+    {% endif %}
+</header>
+
+<form method="get" class="tv-busca-faixas" role="search">
+    {% if form.non_field_errors %}
+        <div class="tv-alert tv-alert-error" role="alert">{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+    {% endif %}
+    <div class="tv-busca-linha">
+        <label for="{{ form.q.id_for_label }}" class="tv-sr">{{ form.q.label }}</label>
+        {{ form.q|bs }}
+        <button type="submit" class="tv-btn tv-btn-auto">Buscar</button>
+        {% if request.GET %}<a href="{% url 'acervo:faixa_lista' %}" class="tv-btn tv-btn-secondary tv-btn-auto">Limpar</a>{% endif %}
+    </div>
+    {% for error in form.q.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+
+    <details class="tv-filtros-avancados"{% if form.avancados_em_uso %} open{% endif %}>
+        <summary>Filtros avançados</summary>
+        <div class="row g-3 pt-3">
+            {% for field in form.campos_avancados %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <label class="form-label small tv-muted mb-1" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field|bs }}
+                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </details>
 </form>
 
 {% if faixa_list %}
-<p class="tv-muted">{{ paginator.count }} faixa{{ paginator.count|pluralize }} encontrada{{ paginator.count|pluralize }}.</p>
-<table class="tv-tabela">
-    <thead><tr><th>Título</th><th>Artista</th><th>Álbum</th><th>Gênero</th><th>BPM</th><th>Média</th></tr></thead>
-    <tbody>
-    {% for faixa in faixa_list %}
-        <tr>
-            <td><a href="{% url 'acervo:faixa_detalhe' faixa.pk %}">{{ faixa.titulo }}</a></td>
-            <td>{{ faixa.album.artista }}</td>
-            <td><a href="{% url 'acervo:album_detalhe' faixa.album_id %}">{{ faixa.album.titulo }}</a></td>
-            <td>{{ faixa.get_genero_display }}</td>
-            <td>{{ faixa.bpm|default:'—' }}</td>
-            <td>{{ faixa.media|floatformat:1|default:'—' }}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% include 'partials/paginacao.html' %}
+    {% include 'acervo/_tabela_faixas.html' with faixas=faixa_list inicio=page_obj.start_index %}
+    {% include 'partials/paginacao.html' %}
 {% elif form.tem_filtro or form.errors %}
-<p class="tv-muted">Nenhuma faixa corresponde aos filtros informados.</p>
+    <div class="tv-vazio">
+        <div class="tv-vazio-icone" aria-hidden="true">🔍</div>
+        <p>Nenhuma faixa corresponde aos filtros informados.</p>
+        <a href="{% url 'acervo:faixa_lista' %}" class="tv-btn tv-btn-secondary tv-btn-auto">Limpar filtros</a>
+    </div>
 {% else %}
-<p class="tv-muted">Nenhuma faixa cadastrada ainda.</p>
+    <div class="tv-vazio">
+        <div class="tv-vazio-icone" aria-hidden="true">♪</div>
+        <p>Nenhuma faixa cadastrada ainda.</p>
+        {% if user.is_authenticated %}<a href="{% url 'acervo:importar_spotify' %}" class="tv-btn tv-btn-auto">Importar a primeira faixa</a>{% endif %}
+    </div>
 {% endif %}
 {% endblock %}

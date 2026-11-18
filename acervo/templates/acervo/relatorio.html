@@ -94,7 +94,7 @@
     <h2>As 10 mais bem avaliadas</h2>
     <ol class="tv-ranking">
         {% for f in r.top_faixas %}
-        <li><a href="{{ f.get_absolute_url }}">{{ f.titulo }}</a> <span class="tv-muted">— {{ f.album.artista }}</span> <span class="tv-nota">{{ f.media|floatformat:1 }}</span></li>
+        <li><div class="tv-faixa-titulo">{% if f.album.capa_url %}<img src="{{ f.album.capa_url }}" alt="" class="tv-mini-capa" loading="lazy" width="44" height="44">{% else %}<span class="tv-mini-capa tv-mini-capa-vazia" aria-hidden="true">♪</span>{% endif %}<div><a href="{{ f.get_absolute_url }}" class="tv-faixa-nome">{{ f.titulo }}</a><span class="tv-faixa-artista">{{ f.album.artista }}</span></div><span class="tv-nota ms-auto">{{ f.media|floatformat:1 }}</span></div></li>
         {% endfor %}
     </ol>
 </section>
@@ -108,7 +108,7 @@
         <tbody>
         {% for f in r.faixas %}
             <tr>
-                <td>{{ f.titulo }}</td>
+                <td><div class="tv-faixa-titulo">{% if f.album.capa_url %}<img src="{{ f.album.capa_url }}" alt="" class="tv-mini-capa" loading="lazy" width="44" height="44">{% else %}<span class="tv-mini-capa tv-mini-capa-vazia" aria-hidden="true">♪</span>{% endif %}<span>{{ f.titulo }}</span></div></td>
                 <td>{{ f.album.artista }}</td>
                 <td>{{ f.album.titulo }}</td>
                 <td>{{ f.album.ano_lancamento|default:'—' }}</td>

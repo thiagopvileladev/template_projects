@@ -1,0 +1,10 @@
+{# Mosaico de capas de uma coleção. Parâmetro: colecao #}
+{% with capas=colecao.capas_mosaico %}
+{% if capas %}
+<div class="tv-mosaico tv-mosaico-{{ capas|length }}" aria-hidden="true">
+    {% for capa in capas %}<img src="{{ capa }}" alt="" loading="lazy">{% endfor %}
+</div>
+{% else %}
+<div class="tv-mosaico tv-mosaico-vazio" aria-hidden="true">♫</div>
+{% endif %}
+{% endwith %}

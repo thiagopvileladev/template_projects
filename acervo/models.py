@@ -188,3 +188,18 @@ class Colecao(models.Model):
 
     def get_absolute_url(self):
         return reverse('acervo:colecao_detalhe', args=[self.pk])
+
+    def capas_mosaico(self):
+        """Até 4 capas diferentes das faixas, para o mosaico (como playlists).
+
+        Usa self.faixas.all(), aproveitando o prefetch_related das views.
+        """
+        capas = []
+        for faixa in self.faixas.all():
+            capa = faixa.album.capa_url
+            if capa and capa not in capas:
+                capas.append(capa)
+                if len(capas) == 4:
+                    break
+        # Mosaico 2x2 precisa de 4; com menos, mostra só a primeira capa inteira.
+        return capas if len(capas) == 4 else capas[:1]

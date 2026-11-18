@@ -52,7 +52,10 @@ class AlbumDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['faixas'] = self.object.faixas.annotate(media=Avg('avaliacoes__nota_pessoal'))
+        context['faixas'] = (self.object.faixas.select_related('album')
+                             .annotate(media=Avg('avaliacoes__nota_pessoal')))
+        context['media_album'] = Avaliacao.objects.filter(faixa__album=self.object).aggregate(
+            m=Avg('nota_pessoal'))['m']
         return context
 
 
@@ -373,6 +376,7 @@ class ColecaoListView(ListView):
             visiveis |= Q(usuario=self.request.user)
         return (Colecao.objects.filter(visiveis)
                 .select_related('usuario')
+                .prefetch_related('faixas__album')  # capas do mosaico
                 .annotate(total_faixas=Count('faixas')))
 
 
@@ -383,7 +387,13 @@ class ColecaoDetailView(DetailView):
         visiveis = Q(is_publica=True)
         if self.request.user.is_authenticated:
             visiveis |= Q(usuario=self.request.user)
-        return Colecao.objects.filter(visiveis)
+        return Colecao.objects.filter(visiveis).select_related('usuario').prefetch_related('faixas__album')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['faixas'] = (self.object.faixas.select_related('album')
+                             .annotate(media=Avg('avaliacoes__nota_pessoal')))
+        return context
 
 
 class DonoColecaoMixin(LoginRequiredMixin):

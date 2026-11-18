@@ -3,24 +3,32 @@
 {% block title %}{{ colecao.nome }} · TrackVault{% endblock %}
 
 {% block content %}
-<section class="tv-card">
-    <h1>{{ colecao.nome }}</h1>
-    <p class="tv-muted">por {{ colecao.usuario.username }} · {% if colecao.is_publica %}pública{% else %}privada{% endif %}</p>
-    {% if colecao.descricao %}<p>{{ colecao.descricao }}</p>{% endif %}
-    {% if colecao.usuario == user %}
-    <div class="tv-actions">
-        <a href="{% url 'acervo:colecao_editar' colecao.pk %}" class="tv-btn tv-btn-secondary tv-btn-auto">Editar</a>
-        <a href="{% url 'acervo:colecao_excluir' colecao.pk %}" class="tv-btn tv-btn-danger tv-btn-auto">Excluir</a>
+<section class="tv-cabecalho-midia">
+    {% include 'acervo/_mosaico.html' %}
+    <div class="tv-cabecalho-info">
+        <span class="tv-rotulo">Coleção {% if colecao.is_publica %}pública{% else %}privada{% endif %}</span>
+        <h1>{{ colecao.nome }}</h1>
+        {% if colecao.descricao %}<p class="tv-muted mb-2">{{ colecao.descricao }}</p>{% endif %}
+        <div class="tv-meta">
+            <strong>{{ colecao.usuario.username }}</strong>
+            <span>{{ faixas|length }} faixa{{ faixas|length|pluralize }}</span>
+        </div>
+        {% if colecao.usuario == user %}
+        <div class="tv-actions">
+            <a href="{% url 'acervo:colecao_editar' colecao.pk %}" class="tv-btn tv-btn-secondary tv-btn-auto">Editar</a>
+            <a href="{% url 'acervo:colecao_excluir' colecao.pk %}" class="tv-btn tv-btn-danger tv-btn-auto">Excluir</a>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </section>
 
-<h2>Faixas</h2>
-<ul class="tv-lista">
-{% for faixa in colecao.faixas.all %}
-    <li><a href="{% url 'acervo:faixa_detalhe' faixa.pk %}">{{ faixa.titulo }}</a> <span class="tv-muted">— {{ faixa.album.artista }}</span></li>
-{% empty %}
-    <li class="tv-muted">Esta coleção ainda está vazia.</li>
-{% endfor %}
-</ul>
+{% if faixas %}
+    {% include 'acervo/_tabela_faixas.html' with faixas=faixas inicio=1 %}
+{% else %}
+    <div class="tv-vazio">
+        <div class="tv-vazio-icone" aria-hidden="true">♫</div>
+        <p>Esta coleção ainda está vazia.</p>
+        {% if colecao.usuario == user %}<a href="{% url 'acervo:colecao_editar' colecao.pk %}" class="tv-btn tv-btn-auto">Adicionar faixas</a>{% endif %}
+    </div>
+{% endif %}
 {% endblock %}

@@ -22,7 +22,8 @@ ORDENACOES = {
 
 class BuscaFaixaForm(forms.Form):
     q = forms.CharField(label='Busca', required=False, max_length=100,
-                        widget=forms.TextInput(attrs={'placeholder': 'Título, artista ou álbum'}))
+                        widget=forms.TextInput(attrs={'placeholder': 'O que você quer ouvir? Título, artista ou álbum',
+                                                             'class': 'tv-input-busca'}))
     artista = forms.CharField(required=False, max_length=100)
     genero = forms.ChoiceField(label='Gênero', required=False,
                                choices=[('', 'Todos')] + list(Faixa.Genero.choices))
@@ -57,6 +58,18 @@ class BuscaFaixaForm(forms.Form):
         return self.is_bound and any(
             v not in (None, '') for k, v in self.cleaned_data.items() if k != 'ordem'
         )
+
+    CAMPOS_AVANCADOS = ('artista', 'genero', 'nota_min', 'bpm_min', 'bpm_max', 'colecao', 'ordem')
+
+    @property
+    def avancados_em_uso(self):
+        """True se algum filtro além da busca livre foi usado (ou tem erro)."""
+        if not self.is_bound:
+            return False
+        return any(self.data.get(c) for c in self.CAMPOS_AVANCADOS) or bool(self.errors)
+
+    def campos_avancados(self):
+        return [self[c] for c in self.CAMPOS_AVANCADOS]
 
 
 def filtrar_faixas(filtros, queryset=None):

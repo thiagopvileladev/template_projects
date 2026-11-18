@@ -3,15 +3,20 @@
 {% block title %}Coleções · TrackVault{% endblock %}
 
 {% block content %}
-<div class="tv-topo">
-    <h1>Coleções</h1>
+<header class="tv-pagina-topo">
+    <div>
+        <span class="tv-rotulo">Listas temáticas</span>
+        <h1>Coleções</h1>
+        {% if colecao_list %}<p>{{ paginator.count }} coleç{{ paginator.count|pluralize:'ão,ões' }}{% if user.is_authenticated %}: as públicas e as suas{% endif %}.</p>{% endif %}
+    </div>
     {% if user.is_authenticated %}<a href="{% url 'acervo:colecao_nova' %}" class="tv-btn tv-btn-auto">+ Nova coleção</a>{% endif %}
-</div>
+</header>
 
 {% if colecao_list %}
 <div class="tv-grid">
     {% for colecao in colecao_list %}
     <a href="{% url 'acervo:colecao_detalhe' colecao.pk %}" class="tv-card tv-album">
+        {% include 'acervo/_mosaico.html' %}
         <strong>{{ colecao.nome }}</strong>
         <span class="tv-muted">por {{ colecao.usuario.username }}{% if not colecao.is_publica %} · privada{% endif %}</span>
         <small class="tv-muted">{{ colecao.total_faixas }} faixa{{ colecao.total_faixas|pluralize }}</small>
@@ -20,6 +25,10 @@
 </div>
 {% include 'partials/paginacao.html' %}
 {% else %}
-<p class="tv-muted">Nenhuma coleção para mostrar.</p>
+<div class="tv-vazio">
+    <div class="tv-vazio-icone" aria-hidden="true">♫</div>
+    <p>Nenhuma coleção para mostrar.</p>
+    {% if user.is_authenticated %}<a href="{% url 'acervo:colecao_nova' %}" class="tv-btn tv-btn-auto">Criar a primeira coleção</a>{% endif %}
+</div>
 {% endif %}
 {% endblock %}

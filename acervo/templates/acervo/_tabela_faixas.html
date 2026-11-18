@@ -1,0 +1,52 @@
+{% comment %}
+Lista de faixas no estilo tracklist (capa + título/artista, álbum, gênero, BPM, média).
+Parâmetros do include:
+  faixas         — queryset/lista de Faixa (com .media anotada, opcional)
+  inicio         — número da primeira linha (paginação); padrão 1
+  sem_album      — True para esconder a coluna Álbum (página do próprio álbum)
+  sem_capa       — True para esconder as miniaturas (todas teriam a mesma capa)
+{% endcomment %}
+<div class="tv-faixas-wrap">
+<table class="tv-faixas">
+    <thead>
+        <tr>
+            <th class="tv-col-num" scope="col">#</th>
+            <th scope="col">Título</th>
+            {% if not sem_album %}<th class="tv-col-album" scope="col">Álbum</th>{% endif %}
+            <th class="tv-col-genero" scope="col">Gênero</th>
+            <th class="tv-col-bpm" scope="col">BPM</th>
+            <th class="tv-col-nota" scope="col">Média</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for faixa in faixas %}
+        <tr>
+            <td class="tv-col-num">{{ forloop.counter0|add:inicio|default:forloop.counter }}</td>
+            <td>
+                <div class="tv-faixa-titulo">
+                    {% if not sem_capa %}
+                        {% if faixa.album.capa_url %}
+                            <img src="{{ faixa.album.capa_url }}" alt="" class="tv-mini-capa" loading="lazy" width="44" height="44">
+                        {% else %}
+                            <span class="tv-mini-capa tv-mini-capa-vazia" aria-hidden="true">♪</span>
+                        {% endif %}
+                    {% endif %}
+                    <div>
+                        <a href="{{ faixa.get_absolute_url }}" class="tv-faixa-nome">{{ faixa.titulo }}</a>
+                        <span class="tv-faixa-artista">{{ faixa.album.artista }}</span>
+                    </div>
+                </div>
+            </td>
+            {% if not sem_album %}
+            <td class="tv-col-album"><a href="{% url 'acervo:album_detalhe' faixa.album_id %}">{{ faixa.album.titulo }}</a></td>
+            {% endif %}
+            <td class="tv-col-genero"><span class="tv-genero">{{ faixa.get_genero_display }}</span></td>
+            <td class="tv-col-bpm">{{ faixa.bpm|default:'—' }}</td>
+            <td class="tv-col-nota">
+                {% if faixa.media is not None %}<span class="tv-nota">{{ faixa.media|floatformat:1 }}</span>{% else %}<span class="tv-sem-nota">—</span>{% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
