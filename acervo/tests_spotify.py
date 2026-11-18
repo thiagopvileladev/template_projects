@@ -6,10 +6,12 @@ então rodam sem internet e sem credenciais, e conseguem reproduzir falhas
 (timeout, queda de conexão, JSON inválido, limite de requisições).
 """
 
+from io import StringIO
 from unittest import mock
 
 import requests
 from django.core.cache import cache
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -222,3 +224,77 @@ class ImportacaoViewTests(TestCase):
         resposta = self.client.post(self.url, {'spotify_id': 'abc'}, follow=True)
         self.assertContains(resposta, 'temporariamente indisponível')
         self.assertFalse(Album.objects.exists())
+
+
+def album_json(nome, artistas, album_id='alb1', capa='https://i.scdn.co/image/capa'):
+    return {'id': album_id, 'name': nome, 'artists': [{'name': a} for a in artistas],
+            'images': [{'url': capa}] if capa else []}
+
+
+@override_settings(SPOTIFY_CLIENT_ID='id-teste', SPOTIFY_CLIENT_SECRET='segredo-teste')
+class BuscarCapasTests(TestCase):
+    """Comando buscar_capas: completa as capas dos álbuns pela API do Spotify."""
+
+    def setUp(self):
+        cache.clear()
+        self.abbey = Album.objects.create(titulo='Abbey Road', artista='The Beatles')
+        self.elis = Album.objects.create(titulo='Elis & Tom', artista='Elis Regina e Tom Jobim')
+        self.com_capa = Album.objects.create(titulo='Já tem', artista='X', capa_url='https://exemplo.com/c.jpg')
+
+    def rodar(self, *args):
+        saida = StringIO()
+        call_command('buscar_capas', *args, stdout=saida)
+        return saida.getvalue()
+
+    @mock.patch('acervo.services.spotify_service._get')
+    def test_preenche_capa_e_id_e_ignora_quem_ja_tem(self, get):
+        respostas = {
+            'Abbey Road': album_json('Abbey Road (Remastered 2009)', ['The Beatles'], 'abbey'),
+            'Elis & Tom': album_json('Elis & Tom', ['Elis Regina', 'Antônio Carlos Jobim'], 'elis'),
+        }
+        # Responde conforme o álbum pesquisado (a ordem de consulta não importa).
+        get.side_effect = lambda caminho, params: {'albums': {'items': [
+            r for nome, r in respostas.items() if f'album:{nome} ' in params['q']]}}
+        saida = self.rodar()
+        self.abbey.refresh_from_db(); self.elis.refresh_from_db()
+        self.assertEqual((self.abbey.capa_url, self.abbey.spotify_id), ('https://i.scdn.co/image/capa', 'abbey'))
+        self.assertEqual(self.elis.spotify_id, 'elis')
+        self.assertEqual(get.call_count, 2)  # o álbum que já tinha capa não é consultado
+        self.assertIn('Capas atualizadas: 2', saida)
+
+    @mock.patch('acervo.services.spotify_service._get')
+    def test_nao_grava_capa_de_outro_artista_ou_titulo(self, get):
+        get.return_value = {'albums': {'items': [
+            album_json('Abbey Road Tribute', ['Banda Cover']),
+            album_json('Outro Disco', ['The Beatles']),
+        ]}}
+        saida = self.rodar()
+        self.abbey.refresh_from_db()
+        self.assertEqual(self.abbey.capa_url, '')
+        self.assertIn('Sem correspondência confiável', saida)
+
+    @mock.patch('acervo.services.spotify_service._get')
+    def test_simular_nao_grava(self, get):
+        get.return_value = {'albums': {'items': [album_json('Abbey Road', ['The Beatles'])]}}
+        self.assertIn('simulação', self.rodar('--simular'))
+        self.abbey.refresh_from_db()
+        self.assertEqual(self.abbey.capa_url, '')
+
+    @mock.patch('acervo.services.spotify_service._get')
+    def test_nao_reusa_spotify_id_de_outro_album(self, get):
+        Album.objects.create(titulo='Outro', artista='Y', spotify_id='abbey', capa_url='https://x/y.jpg')
+        get.return_value = {'albums': {'items': [album_json('Abbey Road', ['The Beatles'], 'abbey')]}}
+        self.rodar()
+        self.abbey.refresh_from_db()
+        self.assertEqual(self.abbey.capa_url, 'https://i.scdn.co/image/capa')
+        self.assertIsNone(self.abbey.spotify_id)
+
+    @mock.patch('acervo.services.spotify_service.requests.post', side_effect=requests.ConnectionError)
+    def test_spotify_fora_do_ar_nao_quebra_o_deploy(self, post):
+        saida = self.rodar()  # não pode lançar exceção
+        self.assertIn('Spotify indisponível', saida)
+        self.assertFalse(Album.objects.exclude(pk=self.com_capa.pk).exclude(capa_url='').exists())
+
+    @override_settings(SPOTIFY_CLIENT_ID='', SPOTIFY_CLIENT_SECRET='')
+    def test_sem_credenciais(self):
+        self.assertIn('não configurado', self.rodar())

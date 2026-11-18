@@ -28,3 +28,6 @@ fi
 if [ "${POPULAR_DEMO:-false}" = "true" ]; then
     python manage.py popular_demo
 fi
+
+# Capas dos álbuns sem capa, via Spotify (não interrompe o deploy se falhar).
+python manage.py buscar_capas

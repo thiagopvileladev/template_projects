@@ -13,6 +13,8 @@ Ver docs/api/documento_api.md (seção 2) e docs/arquitetura/documento_arquitetu
 """
 
 import logging
+import re
+import unicodedata
 from dataclasses import dataclass
 
 import requests
@@ -187,3 +189,56 @@ def obter_faixa(spotify_id):
     except (KeyError, TypeError, ValueError) as erro:
         logger.warning('Spotify: formato inesperado na faixa')
         raise SpotifyIndisponivel() from erro
+
+
+@dataclass
+class AlbumSpotify:
+    spotify_id: str
+    titulo: str
+    artistas: list
+    capa_url: str
+
+
+def _normalizar(texto):
+    """Minúsculas, sem acentos e sem pontuação: 'Águas de Março' -> 'aguas de marco'."""
+    sem_acento = unicodedata.normalize('NFKD', texto or '').encode('ascii', 'ignore').decode()
+    return ' '.join(re.sub(r'[^a-z0-9 ]', ' ', sem_acento.lower()).split())
+
+
+def _album_corresponde(album, titulo, artista):
+    """
+    Evita capas erradas: o título tem que bater (aceitando sufixos como
+    "(Remastered)") e pelo menos um artista do Spotify tem que estar no nome
+    do artista cadastrado ("Elis Regina e Tom Jobim" contém "Elis Regina").
+    """
+    t_spotify, t_local = _normalizar(album.titulo), _normalizar(titulo)
+    titulo_ok = t_spotify.startswith(t_local) or t_local.startswith(t_spotify)
+    a_local = _normalizar(artista)
+    artista_ok = any(_normalizar(a) and _normalizar(a) in a_local for a in album.artistas)
+    return titulo_ok and artista_ok
+
+
+def buscar_album(titulo, artista):
+    """
+    Procura um álbum no Spotify (GET /v1/search?type=album) e devolve o
+    AlbumSpotify correspondente, ou None se nenhum resultado for confiável.
+    """
+    if not (titulo or '').strip():
+        return None
+    termo = f'album:{titulo.strip()[:80]} artist:{(artista or "").strip()[:60]}'
+    dados = _get('/search', {'q': termo, 'type': 'album', 'limit': MAX_RESULTADOS})
+    try:
+        itens = dados['albums']['items']
+        candidatos = [
+            AlbumSpotify(
+                spotify_id=item['id'],
+                titulo=item['name'],
+                artistas=[a['name'] for a in item.get('artists') or [] if a.get('name')],
+                capa_url=(item.get('images') or [{}])[0].get('url', ''),
+            )
+            for item in itens if item
+        ]
+    except (KeyError, TypeError, ValueError, IndexError) as erro:
+        logger.warning('Spotify: formato inesperado na busca de álbum')
+        raise SpotifyIndisponivel() from erro
+    return next((a for a in candidatos if a.capa_url and _album_corresponde(a, titulo, artista)), None)
