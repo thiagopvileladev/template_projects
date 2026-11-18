@@ -43,8 +43,9 @@ Relatórios brutos guardados em [`sast/1-inicial/`](sast/1-inicial/) (`bandit.js
 | Bandit | 16 | 0 | 0 | 16 |
 | Semgrep | 2 | 1 (ERROR) | 1 (WARNING) | 0 |
 | pip-audit (25 pacotes) | 0 | — | — | — |
-| Revisão manual | 2 | 0 | 2 | 0 |
-| **Total** | **20** | **1** | **3** | **16** |
+| Revisão manual de código | 2 | 0 | 2 | 0 |
+| Revisão de configuração da infraestrutura (Supabase) | 1 | 1 | 0 | 0 |
+| **Total** | **21** | **2** | **3** | **16** |
 
 ### 1.4 Depois: triagem, priorização e correções
 
@@ -54,6 +55,7 @@ Classificação: **severidade** (impacto se explorado) × **probabilidade** (fac
 
 | ID | Fonte | Achado | Severidade | Probabilidade | Prioridade | Correção |
 |---|---|---|---|---|---|---|
+| SAST-04 | Revisão de configuração (17/11/2026, ao criar o banco) | **Tabelas do Django expostas pela Data API do Supabase.** O Supabase publica automaticamente o schema `public` por uma API REST acessível com a chave `anon` (considerada pública). As 16 tabelas criadas pelas migrations estavam sem Row Level Security e com `SELECT` liberado para `anon` e `authenticated`, incluindo `accounts_usuario` (e-mails e hashes de senha), contornando todo o controle de acesso do Django. | **Alta** (dados pessoais e hashes de senha) | Média (exige a chave anon do projeto, que não é tratada como segredo pelo Supabase) | **1** | Migration versionada `core/migrations/0001_protege_tabelas_supabase.py`: ativa RLS em todas as tabelas, revoga os privilégios de `anon`/`authenticated` e altera os privilégios padrão para que tabelas futuras também nasçam protegidas. O Django conecta como `postgres` (dono das tabelas, com `BYPASSRLS`) e não é afetado. Em SQLite a migration não faz nada. |
 | SAST-01 | Revisão manual | **Login do site sem limite de tentativas.** A tela `/contas/entrar/` aceitava tentativas ilimitadas de senha (força bruta / *credential stuffing*). A API já tinha limite, o site não. | Média | Alta (ataque automatizável) | **1** | Bloqueio por conta: após 5 senhas erradas para um e-mail, novas tentativas são recusadas por 15 min, mesmo com a senha certa. O contador é compartilhado entre o site e a API (`accounts/protecao.py`). Em produção o cache fica no banco, compartilhado entre os workers do gunicorn. |
 | SAST-02 | Revisão manual | **Limite da API contornável com `X-Forwarded-For` forjado.** Sem `NUM_PROXIES`, o DRF usa o cabeçalho `X-Forwarded-For` inteiro como identidade do cliente; trocando o valor a cada requisição, o atacante escapava do limite de 5 tentativas/min em `/auth/token/`. | Média | Alta | **2** | `NUM_PROXIES` configurável (0 local, 1 no Render): o DRF passa a usar apenas o IP anotado pelo proxy do Render. |
 | SAST-03 | Semgrep `csv-writer-injection` | **CSV injection na exportação do relatório.** Já havia proteção para os campos de texto, mas ela não cobria todas as colunas nem fórmulas precedidas de espaço (`"  =1+1"`). | Baixa (exige o usuário abrir o CSV no Excel e aceitar avisos) | Baixa | **3** | Sanitização aplicada a **todas** as células, inclusive após espaços, e ampliada para `\|` e `%` (`_linha_csv_segura`, `acervo/views.py`). |
@@ -62,6 +64,7 @@ Cada correção tem teste automatizado:
 
 | ID | Teste | Evidência |
 |---|---|---|
+| SAST-04 | Verificação direta no banco do Supabase antes e depois da migration | **Antes:** 16 tabelas, 0 com RLS, 16 com `SELECT` para `anon`. **Depois:** 16 com RLS, 0 privilégios para `anon`/`authenticated`; `SET ROLE anon; SELECT ... FROM accounts_usuario` → `InsufficientPrivilege`; o Django continua lendo e gravando normalmente. |
 | SAST-01 | `accounts/tests.py::test_bloqueia_apos_5_tentativas_erradas`, `test_login_certo_zera_contagem`; `api/tests.py::test_bloqueio_por_conta_compartilhado_com_o_site` | 6ª tentativa com a senha certa é recusada |
 | SAST-02 | `api/tests.py::test_x_forwarded_for_forjado_nao_burla_limite` | **Sem a correção** o teste falha (`400 != 429`: o atacante continua tentando); **com a correção** retorna `429 Too Many Requests` |
 | SAST-03 | `acervo/tests_relatorio.py::test_csv_neutraliza_formulas`, `test_csv_neutraliza_formula_apos_espacos` | Células perigosas exportadas como texto (`'=...`) |
@@ -98,6 +101,7 @@ Relatórios em [`sast/2-final/`](sast/2-final/).
 | Bandit — arquivos de teste | 12 | 18 | Apenas senhas fictícias de teste (risco aceito); o número subiu porque foram criados testes novos para SAST-01 e SAST-02 |
 | pip-audit | 0 | **0** | 25 pacotes, nenhuma CVE conhecida |
 | Revisão manual | 2 | **0** | SAST-01 e SAST-02 corrigidos e cobertos por testes |
+| Revisão de configuração (Supabase) | 1 | **0** | SAST-04 corrigido por migration e verificado no banco |
 | Testes automatizados | 95 aprovados | **100 aprovados** | 5 testes novos de segurança |
 
 ### 1.6 Como reproduzir

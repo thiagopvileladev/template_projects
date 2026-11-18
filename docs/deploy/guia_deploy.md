@@ -38,6 +38,8 @@ Supabase — PostgreSQL (us-east-1)     Spotify Web API
 
 Essa string é o valor de `DATABASE_URL`. Ela é um segredo: não cole no código nem no GitHub.
 
+**Proteção contra a Data API do Supabase:** o Supabase expõe o schema `public` por uma API REST própria. A migration `core/0001_protege_tabelas_supabase` (aplicada automaticamente pelo `build.sh`) ativa Row Level Security e revoga o acesso dos papéis públicos (`anon`, `authenticated`) a todas as tabelas. Ver achado SAST-04 em `docs/seguranca/relatorio_seguranca.md`. Como defesa adicional, a Data API pode ser desligada em **Project Settings → Data API**, já que o TrackVault não a utiliza.
+
 ## Passo 2 — Serviço web no Render
 
 1. Crie uma conta em https://render.com usando **Sign in with GitHub** (a conta dona do repositório).
