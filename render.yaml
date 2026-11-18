@@ -18,9 +18,15 @@ services:
         value: "False"
       - key: SECRET_KEY
         generateValue: true
-      # Um proxy (balanceador do Render) na frente da aplicação.
+      # IP real do cliente: o Render fica atrás do Cloudflare, que envia o IP
+      # em CF-Connecting-IP. O X-Forwarded-For não é usado (NUM_PROXIES=0).
       - key: NUM_PROXIES
-        value: "1"
+        value: "0"
+      - key: CLIENT_IP_HEADER
+        value: HTTP_CF_CONNECTING_IP
+      # Temporário: confirmar os cabeçalhos em produção; depois remover.
+      - key: DIAGNOSTICO_IP
+        value: "True"
       - key: DATABASE_URL
         sync: false
       - key: DATABASE_SSL_REQUIRE

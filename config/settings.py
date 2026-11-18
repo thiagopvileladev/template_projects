@@ -12,6 +12,7 @@ from pathlib import Path
 
 import dj_database_url
 from decouple import Csv, config
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -63,6 +64,8 @@ LOGIN_REDIRECT_URL = 'core:home'
 LOGOUT_REDIRECT_URL = 'core:home'
 
 MIDDLEWARE = [
+    # Primeiro: define o IP real do cliente antes de qualquer outro uso.
+    'core.middleware.IPRealDoClienteMiddleware',
     'django.middleware.security.SecurityMiddleware',
     # WhiteNoise serve os arquivos estáticos em produção sem servidor extra.
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -98,9 +101,18 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # DATABASE_URL define o banco. Sem ela, usa SQLite local (desenvolvimento).
 # Em produção aponta para o PostgreSQL do Supabase, exigindo SSL.
 
+# Espaços e quebras de linha sobrando (comuns ao colar no painel) são ignorados.
+DATABASE_URL = config('DATABASE_URL', default='').strip()
+if DATABASE_URL and not DATABASE_URL.startswith(('postgresql://', 'postgres://', 'sqlite://')):
+    # Mensagem clara sem exibir a URL (ela contém a senha do banco).
+    raise ImproperlyConfigured(
+        'DATABASE_URL inválida: deve começar com "postgresql://". '
+        'Confira o valor colado nas variáveis de ambiente.'
+    )
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
+    'default': dj_database_url.parse(
+        DATABASE_URL or f'sqlite:///{BASE_DIR / "db.sqlite3"}',
         conn_max_age=600,
         ssl_require=config('DATABASE_SSL_REQUIRE', default=False, cast=bool),
     )
@@ -180,11 +192,17 @@ REST_FRAMEWORK = {
         'user': '120/min',
         'token': '5/min',  # nosec B105 - taxa de requisições, não é senha
     },
-    # Achado SAST-02: quantos proxies confiáveis ficam na frente da aplicação.
-    # 0 (local) = usa o IP da conexão. No Render = 1: usa o IP que o proxy do
-    # Render anotou no X-Forwarded-For, ignorando valores forjados pelo cliente.
+    # Achado SAST-02: 0 = identifica o cliente pelo REMOTE_ADDR e ignora o
+    # X-Forwarded-For (que o cliente pode forjar). Em produção o REMOTE_ADDR
+    # já vem corrigido pelo IPRealDoClienteMiddleware (CF-Connecting-IP).
     'NUM_PROXIES': config('NUM_PROXIES', default=0, cast=int),
 }
+
+# Cabeçalho confiável com o IP real do cliente (formato request.META).
+# Render (atrás do Cloudflare): HTTP_CF_CONNECTING_IP. Local: vazio.
+CLIENT_IP_HEADER = config('CLIENT_IP_HEADER', default='')
+# Temporário: registra nos logs os cabeçalhos de IP recebidos em /api/v1/auth/.
+DIAGNOSTICO_IP = config('DIAGNOSTICO_IP', default=False, cast=bool)
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'TrackVault API',

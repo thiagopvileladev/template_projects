@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.core.cache import cache
 from django.test import override_settings
 from rest_framework import status
@@ -105,7 +104,6 @@ class TokenAPITests(BaseAPITest):
         resposta = self.client.post(f'{BASE}/auth/token/', {'email': 'c@ex.com', 'password': SENHA}, format='json')
         self.assertEqual(resposta.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
 
-    @override_settings(REST_FRAMEWORK={**settings.REST_FRAMEWORK, 'NUM_PROXIES': 1})
     def test_x_forwarded_for_forjado_nao_burla_limite(self):
         """SAST-02: o cliente forja um IP diferente a cada tentativa."""
         url = f'{BASE}/auth/token/'
@@ -115,6 +113,28 @@ class TokenAPITests(BaseAPITest):
         resposta = self.client.post(url, {'email': 'x@ex.com', 'password': 'e'}, format='json',
                                     HTTP_X_FORWARDED_FOR='10.9.9.9, 203.0.113.7')
         self.assertEqual(resposta.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+
+    @override_settings(CLIENT_IP_HEADER='HTTP_CF_CONNECTING_IP')
+    def test_render_proxies_rotativos_usam_ip_do_cloudflare(self):
+        """
+        SAST-02 (revisado em produção): no Render o REMOTE_ADDR é o IP interno
+        de um proxy que muda a cada requisição; o cliente real vem em
+        CF-Connecting-IP. O limite precisa contar pelo cliente real.
+        """
+        url = f'{BASE}/auth/token/'
+        codigos = []
+        for i in range(6):
+            r = self.client.post(url, {'email': 'x@ex.com', 'password': 'e'}, format='json',
+                                 REMOTE_ADDR=f'10.29.{i}.1',          # proxy interno rotativo
+                                 HTTP_CF_CONNECTING_IP='203.0.113.7',  # cliente real
+                                 HTTP_X_FORWARDED_FOR=f'198.51.100.{i}')  # forjado pelo cliente
+            codigos.append(r.status_code)
+        self.assertEqual(codigos[-1], status.HTTP_429_TOO_MANY_REQUESTS, codigos)
+
+    @override_settings(CLIENT_IP_HEADER='HTTP_CF_CONNECTING_IP')
+    def test_cabecalho_de_ip_invalido_e_ignorado(self):
+        resposta = self.client.get(f'{BASE}/faixas/', HTTP_CF_CONNECTING_IP='nao-e-um-ip')
+        self.assertEqual(resposta.status_code, status.HTTP_200_OK)
 
     def test_bloqueio_por_conta_compartilhado_com_o_site(self):
         """SAST-01: erros no site também bloqueiam a geração de token pela API."""
