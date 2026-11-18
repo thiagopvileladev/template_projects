@@ -13,11 +13,12 @@ Complementa os testes automatizados ([`relatorio_testes.md`](relatorio_testes.md
 
 | Campo | Valor |
 |---|---|
-| Data | |
-| Executado por | |
-| Ambiente / URL | |
-| Commit testado | |
-| Navegador(es) | |
+| Data |hoje |
+| Executado por |Thiago |
+| Ambiente / URL |https://trackvault-3hpa.onrender.com |
+| Commit testado |f163cdc
+ |
+| Navegador(es) |Chrome 131 no Windows 11 e Chrome no celular |
 
 **Resultado:** marque ✅ (passou), ❌ (falhou, descreva em Observações) ou ⚠️ (passou com ressalva).
 
@@ -27,27 +28,27 @@ Complementa os testes automatizados ([`relatorio_testes.md`](relatorio_testes.md
 
 | ID | Passos | Resultado esperado | Resultado | Observações |
 |---|---|---|---|---|
-| CT01 | Clicar em **Criar conta**, preencher e-mail, nome e senha forte, enviar | Conta criada, usuário logado, mensagem "Conta criada com sucesso" | | |
-| CT02 | Repetir o CT01 com o mesmo e-mail em letras maiúsculas | Erro "Já existe uma conta com este e-mail." | | |
-| CT03 | Criar conta com senha `123` | Erros de senha curta, comum e só numérica | | |
-| CT04 | Sair e entrar com e-mail e senha corretos | Login e redirecionamento para a página inicial | | |
-| CT05 | Entrar com senha errada | Mensagem "E-mail ou senha incorretos." | | |
-| CT06 | Deslogado, acessar `/faixas/nova/` digitando a URL | Redireciona para o login; após entrar, volta para `/faixas/nova/` | | |
+| CT01 | Clicar em **Criar conta**, preencher e-mail, nome e senha forte, enviar | Conta criada, usuário logado, mensagem "Conta criada com sucesso" |✅ | |
+| CT02 | Repetir o CT01 com o mesmo e-mail em letras maiúsculas | Erro "Já existe uma conta com este e-mail." |✅ | |
+| CT03 | Criar conta com senha `123` | Erros de senha curta, comum e só numérica |✅ | |
+| CT04 | Sair e entrar com e-mail e senha corretos | Login e redirecionamento para a página inicial |✅ | |
+| CT05 | Entrar com senha errada | Mensagem "E-mail ou senha incorretos." |✅ | |
+| CT06 | Deslogado, acessar `/faixas/nova/` digitando a URL | Redireciona para o login; após entrar, volta para `/faixas/nova/` |✅ | |
 
 ### UC02 — Gerenciar acervo
 
 | ID | Passos | Resultado esperado | Resultado | Observações |
 |---|---|---|---|---|
-| CT07 | **Álbuns → + Novo álbum** com título, artista e ano 2010 | Álbum criado, página de detalhe com mensagem de sucesso | | |
-| CT08 | Criar álbum com ano 2999 | Erro "O ano de lançamento não pode estar no futuro." no campo | | |
-| CT09 | No álbum, **+ Adicionar faixa**; preencher gênero e BPM 120 | Faixa criada já vinculada ao álbum | | |
-| CT10 | Criar faixa com BPM 999 e ISRC `abc` | Erros nos dois campos; nada é salvo | | |
-| CT11 | Editar a faixa e alterar o título | Título atualizado e mensagem de sucesso | | |
-| CT12 | Na faixa, **Avaliar** com nota 9,5 e resenha | Avaliação aparece com a nota em verde | | |
-| CT13 | Avaliar de novo a mesma faixa | O formulário abre com a avaliação existente; salvar atualiza em vez de duplicar | | |
-| CT14 | Criar coleção privada com 2 faixas | Coleção criada; marcada como "privada" | | |
-| CT15 | Logar com a outra conta de teste e abrir a URL da coleção privada | Página "não encontrada" (404) | | |
-| CT16 | Excluir um álbum com faixas | Página de confirmação avisa da exclusão das faixas; após confirmar, álbum e faixas somem | | |
+| CT07 | **Álbuns → + Novo álbum** com título, artista e ano 2010 | Álbum criado, página de detalhe com mensagem de sucesso |✅ | |
+| CT08 | Criar álbum com ano 2999 | Erro "O ano de lançamento não pode estar no futuro." no campo |✅ | |
+| CT09 | No álbum, **+ Adicionar faixa**; preencher gênero e BPM 120 | Faixa criada já vinculada ao álbum |✅ | |
+| CT10 | Criar faixa com BPM 999 e ISRC `abc` | Erros nos dois campos; nada é salvo |✅ | |
+| CT11 | Editar a faixa e alterar o título | Título atualizado e mensagem de sucesso |✅ | |
+| CT12 | Na faixa, **Avaliar** com nota 9,5 e resenha | Avaliação aparece com a nota em verde |✅ | |
+| CT13 | Avaliar de novo a mesma faixa | O formulário abre com a avaliação existente; salvar atualiza em vez de duplicar |✅ | |
+| CT14 | Criar coleção privada com 2 faixas | Coleção criada; marcada como "privada" |✅ | |
+| CT15 | Logar com a outra conta de teste e abrir a URL da coleção privada | Página "não encontrada" (404) |✅ | |
+| CT16 | Excluir um álbum com faixas | Página de confirmação avisa da exclusão das faixas; após confirmar, álbum e faixas somem |✅ | |
 
 ### UC03 — Importar do Spotify (requer credenciais configuradas)
 
