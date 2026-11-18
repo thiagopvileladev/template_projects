@@ -166,6 +166,8 @@ main {
 .tv-resultado-info strong, .tv-resultado-info span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tv-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
+.tv-footer { text-align: center; padding: 2rem 1rem; border-top: 1px solid #2a2a2a; margin-top: 2rem; }
+
 /* Mensagens */
 .tv-alert-warning { border-left-color: #f5a623; }
 .tv-alert-info { border-left-color: var(--tv-muted); }

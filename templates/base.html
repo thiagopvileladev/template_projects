@@ -36,5 +36,12 @@
 
         {% block content %}{% endblock %}
     </main>
+
+    <footer class="tv-footer">
+        <a href="{% url 'api:docs' %}">Documentação da API</a>
+        <span class="tv-muted">·</span>
+        <a href="{% url 'acervo:importar_spotify' %}">Importar do Spotify</a>
+        <p class="tv-muted">TrackVault — Curadoria, Acervo e Análises Críticas Musicais em um só Lugar.</p>
+    </footer>
 </body>
 </html>

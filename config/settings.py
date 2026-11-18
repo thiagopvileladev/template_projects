@@ -37,10 +37,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Terceiros
+    'rest_framework',
+    'rest_framework.authtoken',
+    'drf_spectacular',
     # Apps do projeto
     'core',
     'accounts',
     'acervo',
+    'api',
 ]
 
 # Usuário customizado com login por e-mail (UC01).
@@ -131,6 +136,44 @@ if 'test' in sys.argv:
     }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# --- API REST própria (docs/api/documento_api.md, seção 1) --------------------
+
+REST_FRAMEWORK = {
+    # Leitura pública; escrita exige token (Authorization: Bearer <token>).
+    'DEFAULT_AUTHENTICATION_CLASSES': ['api.autenticacao.BearerTokenAuthentication'],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+    'DEFAULT_PAGINATION_CLASS': 'api.paginacao.Paginacao',
+    'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
+    'DEFAULT_PARSER_CLASSES': ['rest_framework.parsers.JSONParser'],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # Limites de uso (PDF 7.3): protege contra abuso e força bruta no token.
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '60/min',
+        'user': '120/min',
+        'token': '5/min',
+    },
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'TrackVault API',
+    'DESCRIPTION': (
+        'API REST do TrackVault para consulta do acervo musical e registro de avaliações.\n\n'
+        '**Leitura** (GET) é pública. **Escrita** exige token: obtenha em '
+        '`POST /api/v1/auth/token/` e envie no cabeçalho `Authorization: Bearer <token>`.\n\n'
+        '**Limites:** 60 req/min sem autenticação, 120 req/min autenticado e 5 req/min '
+        'para geração de token. Acima disso a resposta é `429 Too Many Requests`.'
+    ),
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+}
 
 
 # --- Spotify Web API (docs/api/documento_api.md, seção 2) ---------------------
