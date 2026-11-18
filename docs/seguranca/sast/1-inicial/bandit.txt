@@ -1,0 +1,188 @@
+Run started:2026-11-18 00:49:12.221312+00:00
+
+Test results:
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'errada'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html
+   Location: .\accounts\tests.py:59:12
+58	            'username': 'curador@exemplo.com',
+59	            'password': 'errada',
+60	        })
+61	        self.assertEqual(resposta.status_code, 200)
+62	        self.assertContains(resposta, 'E-mail ou senha incorretos.')
+63	        self.assertNotIn('_auth_user_id', self.client.session)
+
+--------------------------------------------------
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'https://accounts.spotify.com/api/token'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html
+   Location: .\acervo\services\spotify_service.py:24:12
+23	
+24	TOKEN_URL = 'https://accounts.spotify.com/api/token'
+25	API_URL = 'https://api.spotify.com/v1'
+
+--------------------------------------------------
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'spotify:access_token'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html
+   Location: .\acervo\services\spotify_service.py:26:14
+25	API_URL = 'https://api.spotify.com/v1'
+26	CACHE_TOKEN = 'spotify:access_token'
+27	MAX_RESULTADOS = 5
+
+--------------------------------------------------
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'token-123'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html
+   Location: .\acervo\tests_spotify.py:50:36
+49	
+50	TOKEN_OK = resposta_fake(json_data={'access_token': 'token-123', 'expires_in': 3600})
+51	
+
+--------------------------------------------------
+>> Issue: [B106:hardcoded_password_funcarg] Possible hardcoded password: ''
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b106_hardcoded_password_funcarg.html
+   Location: .\acervo\tests_spotify.py:146:5
+145	
+146	    @override_settings(SPOTIFY_CLIENT_ID='', SPOTIFY_CLIENT_SECRET='')
+147	    def test_sem_credenciais(self):
+
+--------------------------------------------------
+>> Issue: [B106:hardcoded_password_funcarg] Possible hardcoded password: 'segredo-teste'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b106_hardcoded_password_funcarg.html
+   Location: .\acervo\tests_spotify.py:53:1
+52	
+53	@override_settings(SPOTIFY_CLIENT_ID='id-teste', SPOTIFY_CLIENT_SECRET='segredo-teste')
+54	class SpotifyServiceTests(TestCase):
+
+--------------------------------------------------
+>> Issue: [B106:hardcoded_password_funcarg] Possible hardcoded password: 'SenhaForte!2026'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b106_hardcoded_password_funcarg.html
+   Location: .\acervo\tests_spotify.py:156:23
+155	        cache.clear()
+156	        self.usuario = Usuario.objects.create_user(username='c', email='c@ex.com', password='SenhaForte!2026')
+157	        self.client.force_login(self.usuario)
+
+--------------------------------------------------
+>> Issue: [B106:hardcoded_password_funcarg] Possible hardcoded password: 'segredo-teste'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b106_hardcoded_password_funcarg.html
+   Location: .\acervo\tests_spotify.py:152:1
+151	
+152	@override_settings(SPOTIFY_CLIENT_ID='id-teste', SPOTIFY_CLIENT_SECRET='segredo-teste')
+153	class ImportacaoViewTests(TestCase):
+
+--------------------------------------------------
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'errada'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html
+   Location: .\api\tests.py:96:81
+95	    def test_credenciais_invalidas(self):
+96	        resposta = self.client.post(f'{BASE}/auth/token/', {'email': 'c@ex.com', 'password': 'errada'}, format='json')
+97	        self.assertEqual(resposta.status_code, status.HTTP_400_BAD_REQUEST)
+
+--------------------------------------------------
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'errada'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html
+   Location: .\api\tests.py:102:74
+101	        for _ in range(5):
+102	            self.client.post(f'{BASE}/auth/token/', {'email': 'c@ex.com', 'password': 'errada'}, format='json')
+103	        resposta = self.client.post(f'{BASE}/auth/token/', {'email': 'c@ex.com', 'password': SENHA}, format='json')
+
+--------------------------------------------------
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'sua-senha'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html
+   Location: .\api\views.py:149:81
+148	        responses={200: TokenRespostaSerializer, 400: OpenApiTypes.OBJECT, 429: OpenApiTypes.OBJECT},
+149	        examples=[OpenApiExample('Login', value={'email': 'curador@exemplo.com', 'password': 'sua-senha'},
+150	                                 request_only=True)],
+
+--------------------------------------------------
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: '5/min'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html
+   Location: .\config\settings.py:167:8
+166	        'user': '120/min',
+167	        'token': '5/min',
+168	    },
+169	}
+170	
+171	SPECTACULAR_SETTINGS = {
+172	    'TITLE': 'TrackVault API',
+
+--------------------------------------------------
+>> Issue: [B106:hardcoded_password_funcarg] Possible hardcoded password: 'SenhaDemo!2026'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b106_hardcoded_password_funcarg.html
+   Location: .\core\tests.py:20:24
+19	        self.assertEqual(Avaliacao.objects.count(), 9)
+20	        self.assertTrue(self.client.login(username='curador.demo@trackvault.app', password='SenhaDemo!2026'))
+21	
+
+--------------------------------------------------
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'SenhaDemo!2026'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html
+   Location: .\core\tests.py:13:36
+12	class PopularDemoTests(TestCase):
+13	    @mock.patch.dict('os.environ', {'DEMO_PASSWORD': 'SenhaDemo!2026'})
+14	    def test_cria_dados_e_e_idempotente(self):
+
+--------------------------------------------------
+>> Issue: [B106:hardcoded_password_funcarg] Possible hardcoded password: 'SenhaForte!2026'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b106_hardcoded_password_funcarg.html
+   Location: .\core\tests.py:37:18
+36	    def test_home_com_indicadores_e_cards(self):
+37	        usuario = Usuario.objects.create_user(username='c', email='c@ex.com', password='SenhaForte!2026')
+38	        album = Album.objects.create(titulo='18 Months', artista='Calvin Harris', capa_url='https://i.scdn.co/image/x')
+
+--------------------------------------------------
+>> Issue: [B106:hardcoded_password_funcarg] Possible hardcoded password: 'SenhaForte!2026'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b106_hardcoded_password_funcarg.html
+   Location: .\core\tests.py:51:18
+50	        self.assertContains(self.client.get('/'), 'Criar conta')
+51	        usuario = Usuario.objects.create_user(username='curador', email='c@ex.com', password='SenhaForte!2026')
+52	        self.client.force_login(usuario)
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 2414
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 16
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 16
+		High: 0
+Files skipped (0):
