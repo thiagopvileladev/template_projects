@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.core.cache import cache
+from django.test import override_settings
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
@@ -102,6 +104,25 @@ class TokenAPITests(BaseAPITest):
             self.client.post(f'{BASE}/auth/token/', {'email': 'c@ex.com', 'password': 'errada'}, format='json')
         resposta = self.client.post(f'{BASE}/auth/token/', {'email': 'c@ex.com', 'password': SENHA}, format='json')
         self.assertEqual(resposta.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+
+    @override_settings(REST_FRAMEWORK={**settings.REST_FRAMEWORK, 'NUM_PROXIES': 1})
+    def test_x_forwarded_for_forjado_nao_burla_limite(self):
+        """SAST-02: o cliente forja um IP diferente a cada tentativa."""
+        url = f'{BASE}/auth/token/'
+        for i in range(5):
+            self.client.post(url, {'email': 'x@ex.com', 'password': 'e'}, format='json',
+                             HTTP_X_FORWARDED_FOR=f'10.0.0.{i}, 203.0.113.7')
+        resposta = self.client.post(url, {'email': 'x@ex.com', 'password': 'e'}, format='json',
+                                    HTTP_X_FORWARDED_FOR='10.9.9.9, 203.0.113.7')
+        self.assertEqual(resposta.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+
+    def test_bloqueio_por_conta_compartilhado_com_o_site(self):
+        """SAST-01: erros no site também bloqueiam a geração de token pela API."""
+        for _ in range(5):
+            self.client.post('/contas/entrar/', {'username': 'c@ex.com', 'password': 'errada'})
+        resposta = self.client.post(f'{BASE}/auth/token/', {'email': 'c@ex.com', 'password': SENHA}, format='json')
+        self.assertEqual(resposta.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('Muitas tentativas', str(resposta.json()))
 
 
 class AvaliacoesAPITests(BaseAPITest):

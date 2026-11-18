@@ -12,6 +12,9 @@ python manage.py collectstatic --noinput
 # Cria/atualiza as tabelas no PostgreSQL do Supabase.
 python manage.py migrate --noinput
 
+# Tabela do cache compartilhado (bloqueio de login e limites da API).
+python manage.py createcachetable
+
 # Verificação das configurações de segurança de produção.
 python manage.py check --deploy --fail-level ERROR
 

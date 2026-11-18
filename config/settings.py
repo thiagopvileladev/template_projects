@@ -145,6 +145,20 @@ if 'test' in sys.argv:
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+# --- Cache ------------------------------------------------------------------------
+# Usado pelo token do Spotify, pelos limites da API e pelo bloqueio de login.
+# Em produção fica no banco, compartilhado entre os workers do gunicorn
+# (em memória, cada worker teria a sua própria contagem de tentativas).
+
+if DEBUG or 'test' in sys.argv:
+    CACHES = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}}
+else:
+    CACHES = {'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'trackvault_cache',
+    }}
+
+
 # --- API REST própria (docs/api/documento_api.md, seção 1) --------------------
 
 REST_FRAMEWORK = {
@@ -164,8 +178,12 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '60/min',
         'user': '120/min',
-        'token': '5/min',
+        'token': '5/min',  # nosec B105 - taxa de requisições, não é senha
     },
+    # Achado SAST-02: quantos proxies confiáveis ficam na frente da aplicação.
+    # 0 (local) = usa o IP da conexão. No Render = 1: usa o IP que o proxy do
+    # Render anotou no X-Forwarded-For, ignorando valores forjados pelo cliente.
+    'NUM_PROXIES': config('NUM_PROXIES', default=0, cast=int),
 }
 
 SPECTACULAR_SETTINGS = {

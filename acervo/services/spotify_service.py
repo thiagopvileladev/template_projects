@@ -21,9 +21,9 @@ from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
-TOKEN_URL = 'https://accounts.spotify.com/api/token'
+TOKEN_URL = 'https://accounts.spotify.com/api/token'  # nosec B105 - URL pública do OAuth, não é senha
 API_URL = 'https://api.spotify.com/v1'
-CACHE_TOKEN = 'spotify:access_token'
+CACHE_TOKEN = 'spotify:access_token'  # nosec B105 - nome da chave no cache, não é senha
 MAX_RESULTADOS = 5
 
 
@@ -108,7 +108,8 @@ def _obter_token(forcar_novo=False):
         token = dados['access_token']
         expira_em = int(dados.get('expires_in', 3600))
     except requests.RequestException as erro:
-        logger.warning('Spotify: falha ao obter token (%s)', type(erro).__name__)
+        # Registra só o tipo do erro (ex.: Timeout); nenhuma credencial vai para o log.
+        logger.warning('Spotify: falha ao obter token (%s)', type(erro).__name__)  # nosemgrep: python.lang.security.audit.logging.logger-credential-leak.python-logger-credential-disclosure
         raise SpotifyIndisponivel() from erro
     except (ValueError, KeyError, TypeError) as erro:
         logger.warning('Spotify: resposta de token inválida')

@@ -110,3 +110,9 @@ class RelatorioTests(TestCase):
         conteudo = self.client.get(reverse('acervo:relatorio_csv'), {'genero': 'pop'}).content.decode('utf-8-sig')
         self.assertIn("'@SUM(1+1)", conteudo)
         self.assertIn("'=HYPERLINK", conteudo)
+
+    def test_csv_neutraliza_formula_apos_espacos(self):
+        album = Album.objects.create(titulo='Normal', artista='  =1+1')
+        Faixa.objects.create(album=album, titulo='Faixa', genero='funk')
+        conteudo = self.client.get(reverse('acervo:relatorio_csv'), {'genero': 'funk'}).content.decode('utf-8-sig')
+        self.assertIn("'  =1+1", conteudo)

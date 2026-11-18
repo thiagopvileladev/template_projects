@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
+from . import protecao
 from .models import Usuario
 
 
@@ -34,7 +35,21 @@ class LoginForm(AuthenticationForm):
         # errado, para não revelar se o e-mail existe.
         'invalid_login': 'E-mail ou senha incorretos.',
         'inactive': 'Esta conta está desativada.',
+        'bloqueado': 'Muitas tentativas de login. Aguarde 15 minutos e tente novamente.',
     }
 
     def clean_username(self):
         return self.cleaned_data['username'].strip().lower()
+
+    def clean(self):
+        email = self.cleaned_data.get('username')
+        if email and protecao.bloqueado(email):
+            raise forms.ValidationError(self.error_messages['bloqueado'], code='bloqueado')
+        try:
+            dados = super().clean()
+        except forms.ValidationError:
+            if email:
+                protecao.registrar_falha(email)
+            raise
+        protecao.limpar(email)
+        return dados

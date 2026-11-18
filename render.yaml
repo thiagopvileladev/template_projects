@@ -18,6 +18,9 @@ services:
         value: "False"
       - key: SECRET_KEY
         generateValue: true
+      # Um proxy (balanceador do Render) na frente da aplicação.
+      - key: NUM_PROXIES
+        value: "1"
       - key: DATABASE_URL
         sync: false
       - key: DATABASE_SSL_REQUIRE

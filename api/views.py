@@ -146,7 +146,7 @@ class TokenView(APIView):
         summary='Obter token de acesso',
         request=TokenSerializer,
         responses={200: TokenRespostaSerializer, 400: OpenApiTypes.OBJECT, 429: OpenApiTypes.OBJECT},
-        examples=[OpenApiExample('Login', value={'email': 'curador@exemplo.com', 'password': 'sua-senha'},
+        examples=[OpenApiExample('Login', value={'email': 'curador@exemplo.com', 'password': 'sua-senha'},  # nosec B105 - exemplo da documentação
                                  request_only=True)],
         tags=['auth'],
     )

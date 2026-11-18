@@ -2,3 +2,8 @@
 # Instalação: pip install -r requirements-dev.txt
 -r requirements.txt
 coverage==7.17.3
+
+# SAST (docs/seguranca/relatorio_seguranca.md)
+bandit==1.9.4
+semgrep==1.186.0
+pip-audit==2.10.1

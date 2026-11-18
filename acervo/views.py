@@ -292,20 +292,33 @@ def relatorio_csv(request):
     escritor.writerow(['Título', 'Artista', 'Álbum', 'Ano', 'Gênero', 'BPM',
                        'Popularidade', 'Média das notas', 'Avaliações'])
     for f in dados['faixas']:
-        escritor.writerow([
-            _csv_seguro(f.titulo), _csv_seguro(f.album.artista), _csv_seguro(f.album.titulo),
+        # Toda linha passa por _linha_csv_segura, que neutraliza fórmulas (achado SAST-03).
+        escritor.writerow(_linha_csv_segura([  # nosemgrep: python.django.security.injection.csv-writer-injection.csv-writer-injection
+            f.titulo, f.album.artista, f.album.titulo,
             f.album.ano_lancamento or '', f.get_genero_display(), f.bpm or '',
             f.popularidade if f.popularidade is not None else '',
             f'{f.media:.1f}'.replace('.', ',') if f.media is not None else '',
             f.total_avaliacoes,
-        ])
+        ]))
     return resposta
 
 
-def _csv_seguro(texto):
-    # Evita "CSV injection": células começando com = + - @ viram fórmulas no Excel.
-    texto = str(texto)
-    return f"'{texto}" if texto[:1] in ('=', '+', '-', '@', '\t', '\r') else texto
+INICIO_FORMULA = ('=', '+', '-', '@', '\t', '\r', '|', '%')
+
+
+def _linha_csv_segura(celulas):
+    """
+    Evita "CSV injection" (OWASP): no Excel/Planilhas, uma célula que começa
+    com = + - @ (mesmo após espaços) é executada como fórmula. Essas células
+    recebem um apóstrofo na frente e passam a ser texto.
+    """
+    seguras = []
+    for celula in celulas:
+        texto = str(celula)
+        if texto[:1] in INICIO_FORMULA or texto.lstrip()[:1] in INICIO_FORMULA:
+            texto = f"'{texto}"
+        seguras.append(texto)
+    return seguras
 
 
 # --- Avaliações (uma por usuário e faixa) -------------------------------------

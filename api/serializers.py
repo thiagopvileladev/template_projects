@@ -8,6 +8,7 @@ coleções mostram apenas o nome de usuário.
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 
+from accounts import protecao
 from acervo.models import Album, Avaliacao, Colecao, Faixa
 
 
@@ -92,13 +93,16 @@ class TokenSerializer(serializers.Serializer):
     password = serializers.CharField(style={'input_type': 'password'}, trim_whitespace=False, write_only=True)
 
     def validate(self, dados):
-        usuario = authenticate(
-            request=self.context.get('request'),
-            username=dados['email'].strip().lower(),
-            password=dados['password'],
-        )
+        email = dados['email'].strip().lower()
+        # Mesmo bloqueio do login do site: a API não é um atalho para força bruta.
+        if protecao.bloqueado(email):
+            raise serializers.ValidationError(
+                'Muitas tentativas de login. Aguarde 15 minutos e tente novamente.', code='authorization')
+        usuario = authenticate(request=self.context.get('request'), username=email, password=dados['password'])
         if not usuario:
+            protecao.registrar_falha(email)
             raise serializers.ValidationError('E-mail ou senha incorretos.', code='authorization')
+        protecao.limpar(email)
         dados['usuario'] = usuario
         return dados
 
